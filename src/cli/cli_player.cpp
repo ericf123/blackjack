@@ -1,9 +1,11 @@
 #include <cctype>
+#include <limits>
+#include <iomanip>
 #include <iostream>
 #include "cli_player.h"
 #include "player_action.h"
 
-void CliPlayer::observeCard(Card card) { return; }
+void CliPlayer::observeCard(Card card) { /* cli player does nothing with observations */ }
 
 PlayerAction CliPlayer::getNextAction() {
   displayHands();
@@ -73,17 +75,36 @@ PlayerAction CliPlayer::sanitizeAction(PlayerAction action) {
 }
 
 void CliPlayer::displayHands() {
+  std::cout << "--------------------" << std::endl;
+  std::cout << "Bankroll: $" << std::put_money(bankroll) << std::endl;
   std::cout << "-----Your Hands-----" << std::endl;
   for (auto i = 0; i < hands.size(); i++) {
     if (i == currHand) {
       std::cout << "* ";
     }
 
+    std::cout << "($" << std::put_money(hands[i].getWager()) << ") ";
     std::cout << hands[i] << std::endl;
   }
+  std::cout << "--------------------" << std::endl;
+  std::cout << "Dealer Up: " << dealerUpCard.value() << std::endl;
   std::cout << "--------------------" << std::endl;
 }
 
 Wager CliPlayer::getWager() {
-  return 100;
+  Wager desiredWager = 0;
+  while (std::cin.fail() || desiredWager == 0 || desiredWager > bankroll) {
+    if (std::cin.fail()) {
+      std::cin.clear();
+      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+
+    std::cout << "--------------------" << std::endl;
+    std::cout << "Bankroll: $" << std::put_money(bankroll) << std::endl;
+    std::cout << "--------------------" << std::endl;
+    std::cout << "Enter wager: ";
+    std::cin >> desiredWager;
+  }
+
+  return static_cast<Wager>(desiredWager);
 }

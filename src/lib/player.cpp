@@ -4,6 +4,10 @@ void Player::receiveCard(Card card) {
   hands[currHand].addCard(card);
 }
 
+void Player::setDealerUpCard(Card card) {
+  dealerUpCard.emplace(card);
+}
+
 void Player::beginRound(Card firstCard, Wager wager) {
   hands.erase(hands.begin(), hands.end());
 

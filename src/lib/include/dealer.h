@@ -16,6 +16,8 @@ private:
 
   void getWagers();
   void dealInitialCards();
+  void publishUpCard(Card card);
+  bool allPlayersBusted();
   bool checkDealerBlackjack();
   void runPlayerActions();
   bool handlePlayerAction(Player& player, PlayerAction action);

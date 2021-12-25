@@ -4,7 +4,7 @@
 #include <memory> 
 #include <vector>
 #include "deck.h"
-#include "player/player.h"
+#include "player.h"
 
 
 using PlayerPtrIter = std::vector<std::unique_ptr<Player>>::iterator;
@@ -14,13 +14,15 @@ public:
   Table(size_t numDecks, double blackjackPayoutRatio, bool dealerHitSoft17);
 
   bool shouldDealerHitSoft17() const { return dealerHitSoft17; }
-  bool getBlackjackPayoutRatio() const { return blackjackPayoutRatio; }
+  double getBlackjackPayoutRatio() const { return blackjackPayoutRatio; }
 
   PlayerPtrIter getBeginPlayer();
   PlayerPtrIter getEndPlayer();
 
   void addPlayer(std::unique_ptr<Player> player);
+  void showCardToPlayers(Card card);
   Card drawCard();
+  Card drawCard(bool observable);
   void shuffleIfNeeded();
   void forceShuffle();
 private:

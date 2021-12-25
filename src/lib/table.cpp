@@ -17,15 +17,25 @@ PlayerPtrIter Table::getEndPlayer() {
   return players.end();
 }
 
-Card Table::drawCard() {
-  firstRound = false;
-  auto card = deck.draw().value();
-
+void Table::showCardToPlayers(Card card) {
   for (auto& player : players) {
     player->observeCard(card);
   }
+}
+
+Card Table::drawCard(bool observable) {
+  firstRound = false;
+  auto card = deck.draw().value();
+
+  if (observable) {
+    showCardToPlayers(card);
+  }
 
   return card;
+}
+
+Card Table::drawCard() {
+  return drawCard(true);
 }
 
 void Table::shuffleIfNeeded() {

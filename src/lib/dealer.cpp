@@ -24,7 +24,6 @@ void Dealer::dealInitialCards() {
   table->shuffleIfNeeded();
 
   // deal everyone with a non-zero wager the first card
-
   for (auto playerIter = table->getBeginPlayer(); playerIter != table->getEndPlayer(); ++playerIter) {
     auto& player = **playerIter;
     const auto wager = player.getWager();
@@ -35,8 +34,10 @@ void Dealer::dealInitialCards() {
     }
   }
 
-  // deal first card to dealer
-  dealerHand.addCard(table->drawCard());
+  // deal first card to dealer, show it to the table
+  const auto firstDealerCard = table->drawCard();
+  dealerHand.addCard(firstDealerCard);
+  publishUpCard(firstDealerCard);
 
   // deal everyone with a non-zero wager the second card
   for (auto playerIter = table->getBeginPlayer(); playerIter != table->getEndPlayer(); ++playerIter) {
@@ -46,8 +47,15 @@ void Dealer::dealInitialCards() {
     }
   }
 
-  // deal second card to dealer
-  dealerHand.addCard(table->drawCard());
+  // deal second card to dealer (unobservable)
+  dealerHand.addCard(table->drawCard(false));
+}
+
+void Dealer::publishUpCard(Card card) {
+  for (auto playerIter = table->getBeginPlayer(); playerIter != table->getEndPlayer(); ++playerIter) {
+    auto& player = **playerIter;
+    player.setDealerUpCard(card);
+  }
 }
 
 bool Dealer::checkDealerBlackjack() {
@@ -68,18 +76,20 @@ bool Dealer::handlePlayerAction(Player& player, PlayerAction action) {
   auto drawCard = action == PlayerAction::Hit;
 
   if (action == PlayerAction::Split) {
+      player.debit(player.getCurrentHandWager());
       player.splitCurrentHand();
       drawCard = true;
   }
 
   if (action == PlayerAction::DoubleDown) {
-      player.doubleCurrentHand();
-      drawCard = true;
-      if (player.playingLastHand()) {
-        action = PlayerAction::EndTurn;
-      } else {
-        action = PlayerAction::Stay;
-      }
+    player.debit(player.getCurrentHandWager());
+    player.doubleCurrentHand();
+    drawCard = true;
+    if (player.playingLastHand()) {
+      action = PlayerAction::EndTurn;
+    } else {
+      action = PlayerAction::Stay;
+    }
   }
 
   if (drawCard) {
@@ -102,14 +112,34 @@ bool Dealer::handlePlayerAction(Player& player, PlayerAction action) {
   return action != PlayerAction::EndTurn;
 }
 
+bool Dealer::allPlayersBusted() {
+  for (auto playerIter = table->getBeginPlayer(); playerIter != table->getEndPlayer(); ++playerIter) {
+    auto& player = **playerIter;
+    for(auto hand = player.getBeginHand(); hand != player.getEndHand(); ++hand) {
+      if (!hand->isBusted()) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 void Dealer::playDealerHand() {
-  while (dealerHand.getValue() <= DEALER_STAY_VALUE) {
-    if (dealerHand.getValue() < DEALER_STAY_VALUE) {
-      dealerHand.addCard(table->drawCard());
-    } else if (table->shouldDealerHitSoft17() && dealerHand.isSoft()) {
+  // allow players to observe the dealer's down card (they couldn't before)
+  // this assumes the dealer shows their first card, hides their second
+  const auto dealerDownCard = *(dealerHand.getBeginIter() + 1);
+  table->showCardToPlayers(dealerDownCard);
+
+  if (!allPlayersBusted()) {
+    while (dealerHand.getValue() <= DEALER_STAY_VALUE) {
+      if (dealerHand.getValue() < DEALER_STAY_VALUE) {
         dealerHand.addCard(table->drawCard());
-    } else { // dealer has soft 17 and stays
-      break;
+      } else if (table->shouldDealerHitSoft17() && dealerHand.isSoft()) {
+          dealerHand.addCard(table->drawCard());
+      } else { // dealer has soft 17 and stays
+        break;
+      }
     }
   }
 
@@ -128,18 +158,18 @@ void Dealer::handleRoundResults() {
 
       if (handValue == dealerHandValue) {
         // push, just re-credit what we debitted earlier 
-        std::cout << "push" << std::endl;
+        // std::cout << "push" << std::endl;
         player.credit(handWager);
       } else if (hand->isBlackjack()) {
         // pay blackjack payout + original wager
-        std::cout << "blackjack!!" << std::endl;
-        const auto blackjackPayout = (1 + table->getBlackjackPayoutRatio()) * handWager;
+        // std::cout << "blackjack!!" << std::endl;
+        const auto blackjackPayout = (1.0 + table->getBlackjackPayoutRatio()) * handWager;
         player.credit(blackjackPayout);
       } else if ((dealerBusted && !playerBusted) || (!playerBusted && handValue > dealerHandValue)) {
-        std::cout << "winner!" << std::endl;
+        // std::cout << "winner!" << std::endl;
         player.credit(2 * handWager);
       } else {// else -> player lost, do nothing
-        std::cout << "loser :(" << std::endl;
+        // std::cout << "loser :(" << std::endl;
       }
     }
   }
