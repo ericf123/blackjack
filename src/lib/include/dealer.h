@@ -5,14 +5,15 @@
 
 class Dealer {
 public:
-  Dealer(std::unique_ptr<Table> table) : firstRound(true), table(std::move(table)) {}
-  void addPlayerToTable(std::unique_ptr<Player> player);
+  Dealer(std::shared_ptr<Table> table) : firstRound(true), table(std::move(table)) {}
+  void addPlayerToTable(std::shared_ptr<Player> player);
+  const Hand& getDealerHand();
   void playRound();
 private:
   const CardTotal DEALER_STAY_VALUE = 17;
   bool firstRound;
   Hand dealerHand;
-  std::unique_ptr<Table> table;
+  std::shared_ptr<Table> table;
 
   void getWagers();
   void dealInitialCards();

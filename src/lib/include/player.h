@@ -15,7 +15,7 @@ public:
   virtual PlayerAction getNextAction() = 0;
   virtual Wager getWager() = 0;
 
-  void receiveCard(Card card);
+  virtual void receiveCard(Card card);
   void setDealerUpCard(Card card);
   void beginRound(Card firstCard, Wager wager);
   void endCurrentHand();
@@ -24,6 +24,7 @@ public:
 
   void credit(Wager winnings);
   void debit(Wager losses);
+  Bankroll getBankroll();
 
   ConstHandIter getBeginHand();
   ConstHandIter getEndHand();
@@ -31,6 +32,7 @@ public:
   bool playingLastHand();
   CardTotal getCurrentHandValue();
   Wager getCurrentHandWager();
+  const Hand* getCurrentHand();
 protected:
   std::vector<Hand> hands;
   std::optional<Card> dealerUpCard;

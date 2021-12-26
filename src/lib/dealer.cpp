@@ -1,7 +1,7 @@
 #include "dealer.h"
 
-void Dealer::addPlayerToTable(std::unique_ptr<Player> player) {
-  table->addPlayer(std::move(player));
+void Dealer::addPlayerToTable(std::shared_ptr<Player> player) {
+  table->addPlayer(player);
 }
 
 void Dealer::playRound() {
@@ -13,11 +13,13 @@ void Dealer::playRound() {
   if (!dealerHasBlackjack) {
     runPlayerActions();
     playDealerHand();
-  } else {
-    std::cout << "DEALER BLACKJACK :(" << std::endl;
-  }
+  } 
 
   handleRoundResults();
+}
+
+const Hand& Dealer::getDealerHand() {
+  return dealerHand;
 }
 
 void Dealer::dealInitialCards() {
@@ -143,7 +145,7 @@ void Dealer::playDealerHand() {
     }
   }
 
-  std::cout << "final dealer hand: " << dealerHand << std::endl;
+  // std::cout << "final dealer hand: " << dealerHand << std::endl;
 }
 
 void Dealer::handleRoundResults() {

@@ -7,7 +7,7 @@
 #include "player.h"
 
 
-using PlayerPtrIter = std::vector<std::unique_ptr<Player>>::iterator;
+using PlayerPtrIter = std::vector<std::shared_ptr<Player>>::iterator;
 
 class Table {
 public:
@@ -19,7 +19,7 @@ public:
   PlayerPtrIter getBeginPlayer();
   PlayerPtrIter getEndPlayer();
 
-  void addPlayer(std::unique_ptr<Player> player);
+  void addPlayer(std::shared_ptr<Player> player);
   void showCardToPlayers(Card card);
   Card drawCard();
   Card drawCard(bool observable);
@@ -35,5 +35,5 @@ private:
   const bool dealerHitSoft17;
   bool firstRound;
   Deck deck;
-  std::vector<std::unique_ptr<Player>> players;
+  std::vector<std::shared_ptr<Player>> players;
 };

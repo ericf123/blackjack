@@ -3,3 +3,4 @@ set(CMAKE_BUILD_TYPE debug)
 
 add_subdirectory(lib)
 add_subdirectory(cli)
+add_subdirectory(tui)

@@ -5,8 +5,8 @@ Table::Table(size_t numDecks, double blackjackPayoutRatio, bool dealerHitSoft17)
   : blackjackPayoutRatio(blackjackPayoutRatio), 
     dealerHitSoft17(dealerHitSoft17), firstRound(true), deck(numDecks) {}
 
-void Table::addPlayer(std::unique_ptr<Player> player) {
-  players.push_back(std::move(player));
+void Table::addPlayer(std::shared_ptr<Player> player) {
+  players.push_back(player);
 }
 
 PlayerPtrIter Table::getBeginPlayer() {

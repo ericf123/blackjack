@@ -25,16 +25,30 @@ void Player::debit(Wager losses) {
   bankroll -= losses;
 }
 
+Bankroll Player::getBankroll() {
+  return bankroll;
+}
+
 bool Player::playingLastHand() {
   return currHand == hands.size() - 1;
 }
 
 CardTotal Player::getCurrentHandValue() {
+  // TODO: bounds check
   return hands[currHand].getValue();
 }
 
 Wager Player::getCurrentHandWager() {
+  // TODO: bounds check
   return hands[currHand].getWager();
+}
+
+const Hand* Player::getCurrentHand() {
+  if (currHand < hands.size()) {
+    return &hands[currHand];
+  }
+
+  return nullptr;
 }
 
 void Player::endCurrentHand() {
