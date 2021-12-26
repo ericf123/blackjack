@@ -64,8 +64,7 @@ void Player::endCurrentHand() {
 }
 
 void Player::splitCurrentHand() {
-  auto newHand = hands[currHand].split();
-  hands.push_back(newHand);
+  hands.push_back(hands[currHand].split());
 }
 
 void Player::doubleCurrentHand() {

@@ -14,16 +14,18 @@ public:
   virtual void observeCard(Card card) = 0;
   virtual PlayerAction getNextAction() = 0;
   virtual Wager getWager() = 0;
+
+  virtual void beginRound(Card firstCard, Wager wager);
   virtual void receiveCard(Card card);
   virtual void setDealerUpCard(Card card);
+
+  virtual void splitCurrentHand();
+  virtual void doubleCurrentHand();
   virtual void endCurrentHand();
 
-  void beginRound(Card firstCard, Wager wager);
-  void splitCurrentHand();
-  void doubleCurrentHand();
+  virtual void credit(Wager winnings);
+  virtual void debit(Wager losses);
 
-  void credit(Wager winnings);
-  void debit(Wager losses);
   Bankroll getBankroll();
 
   ConstHandIter getBeginHand();

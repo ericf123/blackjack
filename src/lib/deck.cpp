@@ -6,9 +6,9 @@
 
 #include "deck.h"
 
-static constexpr const std::array<Card, 15> CARD_SET { 
-  { Card::Ace, Card::Ace, Card::Ace, Card::Two, Card::Three, Card::Four, Card::Five, Card::Six, 
-    Card::Seven, Card::Eight, Card::Nine, Card::Ten, Card::Jack, Card::Queen, 
+static constexpr const std::array<Card, 13> CARD_SET {
+  { Card::Ace, Card::Two, Card::Three, Card::Four, Card::Five, Card::Six,
+    Card::Seven, Card::Eight, Card::Nine, Card::Ten, Card::Jack, Card::Queen,
     Card::King }};
 
 Deck::Deck(size_t numDecks) {

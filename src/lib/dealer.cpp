@@ -84,7 +84,6 @@ bool Dealer::handlePlayerAction(Player& player, PlayerAction action) {
   if (action == PlayerAction::Split) {
       player.debit(player.getCurrentHandWager());
       player.splitCurrentHand();
-      drawCard = true;
   }
 
   if (action == PlayerAction::DoubleDown) {

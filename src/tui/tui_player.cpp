@@ -22,39 +22,6 @@ PlayerAction TuiPlayer::getNextAction() {
   return actualAction;
 }
 
-PlayerAction TuiPlayer::getDesiredAction() {
-  auto action = PlayerAction::InvalidInput;
-  while (action == PlayerAction::InvalidInput) {
-    auto userInputChar = getch();
-    if (userInputChar == hitKey) {
-      action = PlayerAction::Hit;
-    } else if (userInputChar == stayKey) {
-      action = PlayerAction::Stay;
-    } else if (userInputChar == doubleKey) {
-      action = PlayerAction::DoubleDown;
-    } else if (userInputChar == splitKey) {
-      action = PlayerAction::Split;
-    } else {
-      action = PlayerAction::InvalidInput;
-    }
-  }
-
-  return action;
-}
-
-void TuiPlayer::endCurrentHand() {
-  if (currHand < hands.size() && hands[currHand].isDoubled()) {
-    getch();
-  }
-
-  if (!playingLastHand()) {
-    ++currHand;
-  }
-
-  tableView->update();
-  drawViewsToScreen();
-}
-
 PlayerAction TuiPlayer::sanitizeAction(PlayerAction action) {
   switch (action) {
     case PlayerAction::Stay:
@@ -78,6 +45,45 @@ PlayerAction TuiPlayer::sanitizeAction(PlayerAction action) {
     default:
       return action;
   }
+}
+
+PlayerAction TuiPlayer::getDesiredAction() {
+  auto action = PlayerAction::InvalidInput;
+  while (action == PlayerAction::InvalidInput) {
+    auto userInputChar = getch();
+    if (userInputChar == hitKey) {
+      action = PlayerAction::Hit;
+    } else if (userInputChar == stayKey) {
+      action = PlayerAction::Stay;
+    } else if (userInputChar == doubleKey) {
+      action = PlayerAction::DoubleDown;
+    } else if (userInputChar == splitKey) {
+      action = PlayerAction::Split;
+    } else {
+      action = PlayerAction::InvalidInput;
+    }
+  }
+
+  return action;
+}
+
+void TuiPlayer::splitCurrentHand() {
+  hands.push_back(hands[currHand].split());
+  tableView->update();
+  drawViewsToScreen();
+}
+
+void TuiPlayer::endCurrentHand() {
+  if (currHand < hands.size() && hands[currHand].isDoubled()) {
+    getch();
+  }
+
+  if (!playingLastHand()) {
+    ++currHand;
+  }
+
+  tableView->update();
+  drawViewsToScreen();
 }
 
 Wager TuiPlayer::getWager() {
