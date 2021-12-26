@@ -19,6 +19,7 @@ namespace bjdim {
   constexpr int STATS_WIDTH = 20;
   constexpr int TITLE_HEIGHT = 1;
   constexpr int TABLE_HEIGHT = HAND_HEIGHT * 2 + 4 + 2;
-  constexpr int WAGER_WIDTH = 20;
+  constexpr int WAGER_INPUT_WIDTH = 7;
+  constexpr int WAGER_WIDTH = WAGER_INPUT_WIDTH + sizeof("Wager: $") + 1;
   constexpr int WAGER_HEIGHT = 5;
 }

@@ -48,7 +48,9 @@ int main(int argc, char** argv) {
   // create main views
   TitleView titleView;
   auto tableView = std::make_shared<TableView>(table, dealer, titleView.getBottomY(), 1 + bjdim::STATS_WIDTH);
-  auto wagerView = std::make_shared<WagerView>(tableView->getBottomY(), bjdim::STATS_WIDTH + 1);
+  const auto wagerViewStarty = tableView->getTopY() + (tableView->getHeight() / 2 - bjdim::WAGER_HEIGHT / 2);
+  const auto wagerViewStartx = tableView->getLeftX() + (tableView->getWidth() / 2- bjdim::WAGER_WIDTH / 2);
+  auto wagerView = std::make_shared<WagerView>(wagerViewStarty, wagerViewStartx);
 
   auto player = std::make_shared<TuiPlayer>(1000, tableView, wagerView);
   dealer->addPlayerToTable(player);

@@ -128,7 +128,7 @@ bool Dealer::shouldPlayDealerHand() {
     }
   }
 
-  return true;
+  return false;
 }
 
 void Dealer::playDealerHand() {

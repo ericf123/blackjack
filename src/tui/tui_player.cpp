@@ -43,7 +43,7 @@ PlayerAction TuiPlayer::getDesiredAction() {
 }
 
 void TuiPlayer::endCurrentHand() {
-  if (hands[currHand].isDoubled()) {
+  if (currHand < hands.size() && hands[currHand].isDoubled()) {
     getch();
   }
 

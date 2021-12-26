@@ -34,13 +34,19 @@ bool Player::playingLastHand() {
 }
 
 CardTotal Player::getCurrentHandValue() {
-  // TODO: bounds check
-  return hands[currHand].getValue();
+  if (currHand < hands.size()) {
+    return hands[currHand].getValue();
+  }
+
+  return 0;
 }
 
 Wager Player::getCurrentHandWager() {
-  // TODO: bounds check
-  return hands[currHand].getWager();
+  if (currHand < hands.size()) {
+    return hands[currHand].getWager();
+  }
+
+  return 0;
 }
 
 const Hand* Player::getCurrentHand() {
