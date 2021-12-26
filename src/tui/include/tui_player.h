@@ -19,6 +19,8 @@ public:
   TuiPlayer(double bankroll, std::shared_ptr<TableView> tableView, std::shared_ptr<WagerView> wagerView)
           : TuiPlayer(bankroll, tableView, wagerView, 'j', 'k', 'l', ';') {}
 
+  virtual ~TuiPlayer() = default;
+
   virtual void observeCard(Card card) override;
   virtual PlayerAction getNextAction() override;
   virtual Wager getWager() override;
@@ -32,10 +34,10 @@ private:
   PlayerAction getDesiredAction();
   PlayerAction sanitizeAction(PlayerAction action);
 
-  chtype hitKey;
-  chtype stayKey;
-  chtype doubleKey;
-  chtype splitKey;
+  int hitKey;
+  int stayKey;
+  int doubleKey;
+  int splitKey;
 
   void displayHands();
 };

@@ -42,7 +42,7 @@ public:
     const auto startx = width / 2 - displayStr.size() / 2;
 
     if (startx >= 0) {
-      mvwprintw(window, starty, startx, displayStr.c_str());
+      mvwprintw(window, starty, startx, "%s", displayStr.c_str());
     }
   }
 protected:

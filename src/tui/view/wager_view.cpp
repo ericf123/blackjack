@@ -94,7 +94,7 @@ WagerView::~WagerView() {
     free_form(form);
   }
   
-  for (auto i = 0; i < NUM_FIELDS; ++i) {
+  for (auto i = 0U; i < NUM_FIELDS; ++i) {
     if (fields[i] != nullptr) {
       free_field(fields[i]);
     }

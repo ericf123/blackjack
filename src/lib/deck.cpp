@@ -1,19 +1,19 @@
 #include <algorithm>
-#include <random>
+#include <array>
 #include <chrono>
 #include <optional>
-#include <array>
+#include <random>
 
 #include "deck.h"
 
-static constexpr const std::array<Card, 13> CARD_SET {
-  { Card::Ace, Card::Two, Card::Three, Card::Four, Card::Five, Card::Six,
-    Card::Seven, Card::Eight, Card::Nine, Card::Ten, Card::Jack, Card::Queen,
-    Card::King }};
+static constexpr const std::array<Card, 13> CARD_SET{
+    {Card::Ace, Card::Two, Card::Three, Card::Four, Card::Five, Card::Six,
+     Card::Seven, Card::Eight, Card::Nine, Card::Ten, Card::Jack, Card::Queen,
+     Card::King}};
 
 Deck::Deck(size_t numDecks) {
-  auto repeatTimes = numDecks * 4; // 4 of each card per deck
-  for (auto curr = 0; curr < repeatTimes; ++curr) {
+  const auto repeatTimes = numDecks * 4; // 4 of each card per deck
+  for (auto curr = 0U; curr < repeatTimes; ++curr) {
     cards.insert(cards.end(), CARD_SET.cbegin(), CARD_SET.cend());
   }
   currCard = cards.cbegin();
@@ -29,7 +29,7 @@ std::optional<Card> Deck::draw() {
   } else {
     const auto card = *currCard;
     ++currCard;
-    return { card };
+    return {card};
   }
 }
 

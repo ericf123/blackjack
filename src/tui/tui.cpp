@@ -1,4 +1,3 @@
-#include <iostream>
 #include <locale.h>
 #include <ncurses.h>
 #include <panel.h>
@@ -14,9 +13,11 @@
 #include "tui.h"
 #include "tui_player.h"
 #include "wager_view.h"
-#include <unistd.h>
 
 int main(int argc, char** argv) {
+  (void) argc;
+  (void) argv;
+
   initscr();
   cbreak();
   noecho();
@@ -34,25 +35,24 @@ int main(int argc, char** argv) {
     init_pair(bjcolor::PAIR_CARD_DOWN, COLOR_WHITE, bjcolor::CARD_RED);
   }
 
-  // create models
-  auto table = std::make_shared<Table>(6, 1.5, true);
-  auto dealer = std::make_shared<Dealer>(table);
-
-
   // set up main window background
   bkgd(COLOR_PAIR(bjcolor::PAIR_BKGD));
   attron(COLOR_PAIR(bjcolor::PAIR_BKGD));
   box(stdscr, 0, 0);
   refresh();
 
+  // create models
+  const auto table = std::make_shared<Table>(6, 1.5, true);
+  const auto dealer = std::make_shared<Dealer>(table);
+
   // create main views
   TitleView titleView;
-  auto tableView = std::make_shared<TableView>(table, dealer, titleView.getBottomY(), 1 + bjdim::STATS_WIDTH);
+  const auto tableView = std::make_shared<TableView>(table, dealer, titleView.getBottomY(), 1 + bjdim::STATS_WIDTH);
   const auto wagerViewStarty = tableView->getTopY() + (tableView->getHeight() / 2 - bjdim::WAGER_HEIGHT / 2);
   const auto wagerViewStartx = tableView->getLeftX() + (tableView->getWidth() / 2- bjdim::WAGER_WIDTH / 2);
-  auto wagerView = std::make_shared<WagerView>(wagerViewStarty, wagerViewStartx);
+  const auto wagerView = std::make_shared<WagerView>(wagerViewStarty, wagerViewStartx);
 
-  auto player = std::make_shared<TuiPlayer>(1000, tableView, wagerView);
+  const auto player = std::make_shared<TuiPlayer>(1000, tableView, wagerView);
   dealer->addPlayerToTable(player);
 
   StatsView statsView { player, 1, 1 };
@@ -67,8 +67,8 @@ int main(int argc, char** argv) {
     tableView->update();
     drawViewsToScreen();
 
+    // TODO: offer insurance
     const auto dealerHasBlackjack = dealer->checkDealerBlackjack();
-
     if (!dealerHasBlackjack) {
       dealer->runPlayerActions();
       dealer->playDealerHand();
@@ -80,7 +80,8 @@ int main(int argc, char** argv) {
     tableView->update();
     statsView.update();
     drawViewsToScreen();
-    getch();
+
+    getch(); // wait for input so player can see round results
   }
 
   endwin();

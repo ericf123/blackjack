@@ -36,8 +36,8 @@ public:
   Wager getCurrentHandWager();
   const Hand* getCurrentHand();
 protected:
-  std::vector<Hand> hands;
-  std::optional<Card> dealerUpCard;
-  size_t currHand;
   Bankroll bankroll;
+  size_t currHand;
+  std::optional<Card> dealerUpCard;
+  std::vector<Hand> hands;
 };

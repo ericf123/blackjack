@@ -1,4 +1,6 @@
 #pragma once
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-security"
 
 #include <optional>
 #include <memory>
@@ -18,3 +20,5 @@ std::optional<std::string> strfmt( const std::string& format, Args ... args )
 
   return std::nullopt;
 }
+
+#pragma clang diagnostic pop

@@ -5,7 +5,7 @@
 #include "cli_player.h"
 #include "player_action.h"
 
-void CliPlayer::observeCard(Card card) { /* cli player does nothing with observations */ }
+void CliPlayer::observeCard(Card card) { (void) card; }
 
 PlayerAction CliPlayer::getNextAction() {
   displayHands();
@@ -78,7 +78,7 @@ void CliPlayer::displayHands() {
   std::cout << "--------------------" << std::endl;
   std::cout << "Bankroll: $" << std::put_money(bankroll) << std::endl;
   std::cout << "-----Your Hands-----" << std::endl;
-  for (auto i = 0; i < hands.size(); i++) {
+  for (auto i = 0U; i < hands.size(); i++) {
     if (i == currHand) {
       std::cout << "* ";
     }

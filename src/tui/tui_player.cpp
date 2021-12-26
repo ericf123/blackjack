@@ -4,7 +4,7 @@
 #include "tui_player.h"
 #include "view.h"
 
-void TuiPlayer::observeCard(Card card) {}
+void TuiPlayer::observeCard(Card card) { (void) card; }
 
 void TuiPlayer::receiveCard(Card card) {
   hands[currHand].addCard(card);

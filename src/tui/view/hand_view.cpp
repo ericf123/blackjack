@@ -25,7 +25,7 @@ HandView::HandView(const Hand* hand, int starty, int startx) :
 }
 
 void HandView::renderHand() {
-  auto i = 0;
+  auto i = 0U;
   if (hand != nullptr) {
     const auto& handToRender = *hand;
 
@@ -48,7 +48,7 @@ void HandView::renderHand() {
     }
 
     wattron(window, A_BOLD);
-    mvwprintw(window, height - 2, 2, "$       ", handToRender.getWager());
+    mvwprintw(window, height - 2, 2, "$       ");
     mvwprintw(window, height - 2, 2, "$%d", handToRender.getWager());
     // TODO: move to TableView?
     if (handToRender.isSplit()) {
@@ -56,7 +56,7 @@ void HandView::renderHand() {
       mvwprintw(window, height - 2, width - 4, "(%d)", handToRender.getDepth() + 1);
       wattroff(window, A_BLINK);
     } else {
-      mvwprintw(window, height - 2, width - 4, "   ", handToRender.getDepth() + 1);
+      mvwprintw(window, height - 2, width - 4, "   ");
     }
     wattroff(window, A_BOLD);
   }

@@ -7,7 +7,7 @@
 TableView::TableView(std::shared_ptr<Table> table, std::shared_ptr<Dealer> dealer, 
                      int starty, int startx) : View(bjdim::TABLE_HEIGHT, 
                      COLS - bjdim::STATS_WIDTH - 2, starty, startx),
-                     dealer(dealer), table(table) {
+                     table(table), dealer(dealer) {
   // border
   wattron(window, COLOR_PAIR(bjcolor::PAIR_BKGD));
   wbkgd(window, COLOR_PAIR(bjcolor::PAIR_BKGD));
@@ -59,7 +59,7 @@ void TableView::draw() {
   drawIndividualHand(dealer->getDealerHand(), DEALER_HAND_INDEX);
 
   auto playerIter = table->getBeginPlayer();
-  for (auto i = 1; i < MAX_PLAYERS + 1; ++i) {
+  for (auto i = 1U; i < MAX_PLAYERS + 1; ++i) {
     if (playerIter != table->getEndPlayer()) {
       const auto& player = *playerIter;
       const auto* hand = player->getCurrentHand();

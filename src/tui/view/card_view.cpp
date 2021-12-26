@@ -26,7 +26,7 @@ void CardView::draw() {
   wattron(window, color_pair);
   wbkgd(window, color_pair);
   box(window, 0, 0);
-  mvwprintw(window, height / 2,  width / 2, displayStr.c_str());
+  mvwprintw(window, height / 2,  width / 2, "%s", displayStr.c_str());
 }
 
 void CardView::update() {
