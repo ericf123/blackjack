@@ -1,10 +1,10 @@
-#include <unistd.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "tui_player.h"
 #include "view.h"
 
-void TuiPlayer::observeCard(Card card) { (void) card; }
+void TuiPlayer::observeCard(Card card) { (void)card; }
 
 void TuiPlayer::receiveCard(Card card) {
   hands[currHand].addCard(card);
@@ -24,26 +24,26 @@ PlayerAction TuiPlayer::getNextAction() {
 
 PlayerAction TuiPlayer::sanitizeAction(PlayerAction action) {
   switch (action) {
-    case PlayerAction::Stay:
-      if (playingLastHand()) {
-        return PlayerAction::EndTurn;
-      }
+  case PlayerAction::Stay:
+    if (playingLastHand()) {
+      return PlayerAction::EndTurn;
+    }
 
-      return action;
-    case PlayerAction::DoubleDown:
-      if (!hands[currHand].canDouble()) {
-        return PlayerAction::InvalidInput;
-      }
+    return action;
+  case PlayerAction::DoubleDown:
+    if (!hands[currHand].canDouble()) {
+      return PlayerAction::InvalidInput;
+    }
 
-      return PlayerAction::DoubleDown;
-    case PlayerAction::Split:
-      if (!hands[currHand].canSplit()) {
-        return PlayerAction::InvalidInput;
-      }
+    return PlayerAction::DoubleDown;
+  case PlayerAction::Split:
+    if (!hands[currHand].canSplit()) {
+      return PlayerAction::InvalidInput;
+    }
 
-      return action;
-    default:
-      return action;
+    return action;
+  default:
+    return action;
   }
 }
 
@@ -86,6 +86,4 @@ void TuiPlayer::endCurrentHand() {
   drawViewsToScreen();
 }
 
-Wager TuiPlayer::getWager() {
-  return wagerView->getWager();
-}
+Wager TuiPlayer::getWager() { return wagerView->getWager(); }

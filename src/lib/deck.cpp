@@ -7,9 +7,10 @@
 #include "deck.h"
 
 static constexpr const std::array<Card, 13> CARD_SET{
-    {Card::Ace, Card::Two, Card::Three, Card::Four, Card::Five, Card::Six,
-     Card::Seven, Card::Eight, Card::Nine, Card::Ten, Card::Jack, Card::Queen,
-     Card::King}};
+  { Card::Ace, Card::Two, Card::Three, Card::Four, Card::Five, Card::Six,
+    Card::Seven, Card::Eight, Card::Nine, Card::Ten, Card::Jack, Card::Queen,
+    Card::King }
+};
 
 Deck::Deck(size_t numDecks) {
   const auto repeatTimes = numDecks * 4; // 4 of each card per deck
@@ -29,7 +30,7 @@ std::optional<Card> Deck::draw() {
   } else {
     const auto card = *currCard;
     ++currCard;
-    return {card};
+    return { card };
   }
 }
 

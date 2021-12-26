@@ -1,9 +1,9 @@
 #pragma once
 
+#include "card.h"
 #include <cstdint>
 #include <optional>
 #include <vector>
-#include "card.h"
 
 using ConstCardIterator = std::vector<Card>::const_iterator;
 using Wager = uint32_t;
@@ -14,7 +14,9 @@ public:
 
   Hand() : Hand(0) {}
   Hand(Wager wager) : Hand(wager, 0) {}
-  Hand(Wager wager, int depth) : depth(depth), hasChild(false), isDoubledDown(false), wager(wager), value(0U) {}
+  Hand(Wager wager, int depth)
+      : depth(depth), hasChild(false), isDoubledDown(false), wager(wager),
+        value(0U) {}
 
   void reset();
   void addCard(Card card);
@@ -24,7 +26,7 @@ public:
   ConstCardIterator getBeginIter() const;
   ConstCardIterator getEndIter() const;
 
-  Wager getWager() const; 
+  Wager getWager() const;
   CardTotal getValue() const;
   int getDepth() const;
 
@@ -35,8 +37,9 @@ public:
   bool isSoft() const;
   bool isBlackjack() const;
   bool isBusted() const;
+
 private:
-  int depth; 
+  int depth;
   bool hasChild;
   bool isDoubledDown;
   Wager wager;
@@ -44,8 +47,9 @@ private:
   std::vector<Card> cards;
 };
 
-static inline std::ostream& operator<<(std::ostream& os, Hand hand) {
-  for (auto currCardIter = hand.getBeginIter(); currCardIter != hand.getEndIter(); ++currCardIter) {
+static inline std::ostream &operator<<(std::ostream &os, Hand hand) {
+  for (auto currCardIter = hand.getBeginIter();
+       currCardIter != hand.getEndIter(); ++currCardIter) {
     os << *currCardIter << " ";
   }
   return os;

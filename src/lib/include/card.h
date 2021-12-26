@@ -1,7 +1,7 @@
 #pragma once
 
-#include <cstdint>
 #include <algorithm>
+#include <cstdint>
 #include <iostream>
 
 using CardTotal = uint32_t;
@@ -22,20 +22,20 @@ enum class Card {
   King
 };
 
-static const std::string DISPLAY_STRS[] = { "?", "A", "2", "3", "4", "5", "6", "7",
-                                      "8", "9", "10", "J", "Q", "K" };
+static const std::string DISPLAY_STRS[] = {
+  "?", "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"
+};
 
 static inline std::string getDisplayStr(Card card) {
   return DISPLAY_STRS[static_cast<size_t>(card)];
 }
 
-static inline std::ostream& operator<<(std::ostream& os, Card card) {
+static inline std::ostream &operator<<(std::ostream &os, Card card) {
   os << getDisplayStr(card);
   return os;
 }
 
-template<typename ItType>
-CardTotal sumCards(ItType begin, ItType end) {
+template <typename ItType> CardTotal sumCards(ItType begin, ItType end) {
   auto total = 0U;
   auto numAces = 0;
 

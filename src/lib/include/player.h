@@ -1,16 +1,17 @@
 #pragma once
 
-#include <optional>
-#include <vector>
 #include "hand.h"
 #include "player_action.h"
+#include <optional>
+#include <vector>
 
 using Bankroll = double;
 using ConstHandIter = std::vector<Hand>::const_iterator;
 
 class Player {
 public:
-  Player(Bankroll bankroll) : bankroll(bankroll), currHand(0), dealerUpCard(std::nullopt) {}
+  Player(Bankroll bankroll)
+      : bankroll(bankroll), currHand(0), dealerUpCard(std::nullopt) {}
   virtual void observeCard(Card card) = 0;
   virtual PlayerAction getNextAction() = 0;
   virtual Wager getWager() = 0;
@@ -34,7 +35,8 @@ public:
   bool playingLastHand();
   CardTotal getCurrentHandValue();
   Wager getCurrentHandWager();
-  const Hand* getCurrentHand();
+  const Hand *getCurrentHand();
+
 protected:
   Bankroll bankroll;
   size_t currHand;

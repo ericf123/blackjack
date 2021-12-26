@@ -1,26 +1,26 @@
 #pragma once
 
+#include "strfmt.h"
+#include <cstddef>
 #include <initializer_list>
 #include <memory>
-#include <cstddef>
 #include <ncurses.h>
 #include <panel.h>
-#include "strfmt.h"
 
 class View {
 public:
   View(int height, int width, int starty, int startx);
 
   // view is not copyable
-  View(const View& view) = delete;
-  View& operator=(const View& view) = delete;
-  View(View&& view);
+  View(const View &view) = delete;
+  View &operator=(const View &view) = delete;
+  View(View &&view);
   virtual ~View();
 
   virtual void update() = 0;
 
   int getHeight();
-  int getWidth();  
+  int getWidth();
   int getTopY();
   int getLeftX();
   int getBottomY();
@@ -30,14 +30,14 @@ public:
   virtual void show();
   void sendToFront();
 
-  template<typename ... Args>
-  void printHCenter(int starty, const char* fmt, Args ... args) {
+  template <typename... Args>
+  void printHCenter(int starty, const char *fmt, Args... args) {
     const auto formatted = strfmt(fmt, args...);
-    std::string displayStr { "ERROR" };
+    std::string displayStr{ "ERROR" };
 
     if (formatted) {
       displayStr = formatted.value();
-    } 
+    }
 
     const auto startx = width / 2 - displayStr.size() / 2;
 
@@ -45,9 +45,10 @@ public:
       mvwprintw(window, starty, startx, "%s", displayStr.c_str());
     }
   }
+
 protected:
-  WINDOW* window;
-  PANEL* panel;
+  WINDOW *window;
+  PANEL *panel;
   int height;
   int width;
   int starty;

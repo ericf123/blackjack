@@ -1,12 +1,8 @@
 #include "player.h"
 
-void Player::receiveCard(Card card) {
-  hands[currHand].addCard(card);
-}
+void Player::receiveCard(Card card) { hands[currHand].addCard(card); }
 
-void Player::setDealerUpCard(Card card) {
-  dealerUpCard.emplace(card);
-}
+void Player::setDealerUpCard(Card card) { dealerUpCard.emplace(card); }
 
 void Player::beginRound(Card firstCard, Wager wager) {
   hands.erase(hands.begin(), hands.end());
@@ -17,21 +13,13 @@ void Player::beginRound(Card firstCard, Wager wager) {
   receiveCard(firstCard);
 }
 
-void Player::credit(Wager winnings) {
-  bankroll += winnings;
-}
+void Player::credit(Wager winnings) { bankroll += winnings; }
 
-void Player::debit(Wager losses) {
-  bankroll -= losses;
-}
+void Player::debit(Wager losses) { bankroll -= losses; }
 
-Bankroll Player::getBankroll() {
-  return bankroll;
-}
+Bankroll Player::getBankroll() { return bankroll; }
 
-bool Player::playingLastHand() {
-  return currHand == hands.size() - 1;
-}
+bool Player::playingLastHand() { return currHand == hands.size() - 1; }
 
 CardTotal Player::getCurrentHandValue() {
   if (currHand < hands.size()) {
@@ -49,7 +37,7 @@ Wager Player::getCurrentHandWager() {
   return 0;
 }
 
-const Hand* Player::getCurrentHand() {
+const Hand *Player::getCurrentHand() {
   if (currHand < hands.size()) {
     return &hands[currHand];
   }
@@ -63,18 +51,10 @@ void Player::endCurrentHand() {
   }
 }
 
-void Player::splitCurrentHand() {
-  hands.push_back(hands[currHand].split());
-}
+void Player::splitCurrentHand() { hands.push_back(hands[currHand].split()); }
 
-void Player::doubleCurrentHand() {
-  hands[currHand].doubleDown();
-}
+void Player::doubleCurrentHand() { hands[currHand].doubleDown(); }
 
-ConstHandIter Player::getBeginHand() {
-  return hands.cbegin();
-}
+ConstHandIter Player::getBeginHand() { return hands.cbegin(); }
 
-ConstHandIter Player::getEndHand() {
-  return hands.cend();
-}
+ConstHandIter Player::getEndHand() { return hands.cend(); }

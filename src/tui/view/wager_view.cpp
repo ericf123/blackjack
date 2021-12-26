@@ -1,16 +1,17 @@
-#include <form.h>
-#include <limits>
+#include "wager_view.h"
 #include "strfmt.h"
 #include "view.h"
-#include "wager_view.h"
+#include <form.h>
+#include <limits>
 
-WagerView::WagerView(int starty, int startx) 
-    : View(bjdim::WAGER_HEIGHT, bjdim::WAGER_WIDTH, starty, startx), prevWager(0) {
+WagerView::WagerView(int starty, int startx)
+    : View(bjdim::WAGER_HEIGHT, bjdim::WAGER_WIDTH, starty, startx),
+      prevWager(0) {
   keypad(window, true); // group function keys
 
   // set up wager input form
-  fields[0] = new_field(1, bjdim::WAGER_INPUT_WIDTH, starty + height / 2, 
-    startx + width - bjdim::WAGER_INPUT_WIDTH - 1, 0, 0);
+  fields[0] = new_field(1, bjdim::WAGER_INPUT_WIDTH, starty + height / 2,
+                        startx + width - bjdim::WAGER_INPUT_WIDTH - 1, 0, 0);
   fields[1] = NULL;
 
   field_opts_off(fields[0], O_AUTOSKIP);
@@ -54,24 +55,24 @@ Wager WagerView::getWager() {
     }
     set_current_field(form, fields[0]);
 
-    int ch; 
+    int ch;
     while ((ch = getch()) != '\n') {
-      switch(ch) {
-        case KEY_BACKSPACE:
-        case 127:
-        case '\b':
-          form_driver(form, REQ_END_FIELD);
-          form_driver(form, REQ_DEL_PREV);
-          break;
-        default:
-          // this makes it impossible to enter negative number
-          if (ch >= '0' && ch <= '9') {
-            form_driver(form, ch);
-          }
-          break;
+      switch (ch) {
+      case KEY_BACKSPACE:
+      case 127:
+      case '\b':
+        form_driver(form, REQ_END_FIELD);
+        form_driver(form, REQ_DEL_PREV);
+        break;
+      default:
+        // this makes it impossible to enter negative number
+        if (ch >= '0' && ch <= '9') {
+          form_driver(form, ch);
+        }
+        break;
       }
     }
-  // validation maybe redundant here due to input restriction
+    // validation maybe redundant here due to input restriction
   } while (form_driver(form, REQ_VALIDATION) == E_INVALID_FIELD);
 
   unpost_form(form);
@@ -80,10 +81,10 @@ Wager WagerView::getWager() {
   // this should never throw because of validation
   prevWager = std::stoi(field_buffer(fields[0], 0));
 
-  return prevWager; 
+  return prevWager;
 }
 
-WagerView::WagerView(WagerView&& view) : View(std::move(view)) {
+WagerView::WagerView(WagerView &&view) : View(std::move(view)) {
   form = view.form;
   fields = view.fields;
   view.form = nullptr;
@@ -93,7 +94,7 @@ WagerView::~WagerView() {
   if (form != nullptr) {
     free_form(form);
   }
-  
+
   for (auto i = 0U; i < NUM_FIELDS; ++i) {
     if (fields[i] != nullptr) {
       free_field(fields[i]);
@@ -103,7 +104,7 @@ WagerView::~WagerView() {
   if (panel != nullptr) {
     del_panel(panel);
   }
-  
+
   if (window != nullptr) {
     delwin(window);
   }

@@ -1,11 +1,11 @@
-#include <cctype>
-#include <limits>
-#include <iomanip>
-#include <iostream>
 #include "cli_player.h"
 #include "player_action.h"
+#include <cctype>
+#include <iomanip>
+#include <iostream>
+#include <limits>
 
-void CliPlayer::observeCard(Card card) { (void) card; }
+void CliPlayer::observeCard(Card card) { (void)card; }
 
 PlayerAction CliPlayer::getNextAction() {
   displayHands();
@@ -27,50 +27,49 @@ PlayerAction CliPlayer::getDesiredAction() {
     std::cin >> input;
 
     switch (toupper(input)) {
-      case 'H':
-        action = PlayerAction::Hit;
-        break;
-      case 'S':
-        action = PlayerAction::Stay;
-        break;
-      case 'D':
-        action = PlayerAction::DoubleDown;
-        break;
-      case 'Z':
-        action = PlayerAction::Split;
-        break;
-      default:
-        action = PlayerAction::InvalidInput;
-        break;
+    case 'H':
+      action = PlayerAction::Hit;
+      break;
+    case 'S':
+      action = PlayerAction::Stay;
+      break;
+    case 'D':
+      action = PlayerAction::DoubleDown;
+      break;
+    case 'Z':
+      action = PlayerAction::Split;
+      break;
+    default:
+      action = PlayerAction::InvalidInput;
+      break;
     }
   }
 
   return action;
 }
 
-
 PlayerAction CliPlayer::sanitizeAction(PlayerAction action) {
   switch (action) {
-    case PlayerAction::Stay:
-      if (playingLastHand()) {
-        return PlayerAction::EndTurn;
-      }
+  case PlayerAction::Stay:
+    if (playingLastHand()) {
+      return PlayerAction::EndTurn;
+    }
 
-      return action;
-    case PlayerAction::DoubleDown:
-      if (!hands[currHand].canDouble()) {
-        return PlayerAction::InvalidInput;
-      }
+    return action;
+  case PlayerAction::DoubleDown:
+    if (!hands[currHand].canDouble()) {
+      return PlayerAction::InvalidInput;
+    }
 
-      return PlayerAction::DoubleDown;
-    case PlayerAction::Split:
-      if (!hands[currHand].canSplit()) {
-        return PlayerAction::InvalidInput;
-      }
+    return PlayerAction::DoubleDown;
+  case PlayerAction::Split:
+    if (!hands[currHand].canSplit()) {
+      return PlayerAction::InvalidInput;
+    }
 
-      return action;
-    default:
-      return action;
+    return action;
+  default:
+    return action;
   }
 }
 

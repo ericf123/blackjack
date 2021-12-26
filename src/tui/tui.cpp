@@ -1,6 +1,4 @@
-#include <locale.h>
-#include <ncurses.h>
-#include <panel.h>
+#include "tui.h"
 #include "card.h"
 #include "card_view.h"
 #include "dealer.h"
@@ -10,13 +8,15 @@
 #include "table.h"
 #include "table_view.h"
 #include "title_view.h"
-#include "tui.h"
 #include "tui_player.h"
 #include "wager_view.h"
+#include <locale.h>
+#include <ncurses.h>
+#include <panel.h>
 
-int main(int argc, char** argv) {
-  (void) argc;
-  (void) argv;
+int main(int argc, char **argv) {
+  (void)argc;
+  (void)argv;
 
   initscr();
   cbreak();
@@ -47,15 +47,21 @@ int main(int argc, char** argv) {
 
   // create main views
   TitleView titleView;
-  const auto tableView = std::make_shared<TableView>(table, dealer, titleView.getBottomY(), 1 + bjdim::STATS_WIDTH);
-  const auto wagerViewStarty = tableView->getTopY() + (tableView->getHeight() / 2 - bjdim::WAGER_HEIGHT / 2);
-  const auto wagerViewStartx = tableView->getLeftX() + (tableView->getWidth() / 2- bjdim::WAGER_WIDTH / 2);
-  const auto wagerView = std::make_shared<WagerView>(wagerViewStarty, wagerViewStartx);
+  const auto tableView = std::make_shared<TableView>(
+      table, dealer, titleView.getBottomY(), 1 + bjdim::STATS_WIDTH);
+  const auto wagerViewStarty =
+      tableView->getTopY() +
+      (tableView->getHeight() / 2 - bjdim::WAGER_HEIGHT / 2);
+  const auto wagerViewStartx =
+      tableView->getLeftX() +
+      (tableView->getWidth() / 2 - bjdim::WAGER_WIDTH / 2);
+  const auto wagerView =
+      std::make_shared<WagerView>(wagerViewStarty, wagerViewStartx);
 
   const auto player = std::make_shared<TuiPlayer>(1000, tableView, wagerView);
   dealer->addPlayerToTable(player);
 
-  StatsView statsView { player, 1, 1 };
+  StatsView statsView{ player, 1, 1 };
 
   drawViewsToScreen();
 
@@ -72,7 +78,7 @@ int main(int argc, char** argv) {
     if (!dealerHasBlackjack) {
       dealer->runPlayerActions();
       dealer->playDealerHand();
-    } 
+    }
 
     dealer->handleRoundResults();
 

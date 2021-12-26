@@ -1,11 +1,10 @@
 #pragma once
 
-#include <optional>
-#include <memory> 
-#include <vector>
 #include "deck.h"
 #include "player.h"
-
+#include <memory>
+#include <optional>
+#include <vector>
 
 using PlayerPtrIter = std::vector<std::shared_ptr<Player>>::iterator;
 
@@ -25,6 +24,7 @@ public:
   Card drawCard(bool observable);
   void shuffleIfNeeded();
   void forceShuffle();
+
 private:
   // estimate of maximum number of cards a player can take per round
   // this is used to determine whether or not the deck needs to be shuffled
