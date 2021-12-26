@@ -8,7 +8,8 @@ StatsView::StatsView(std::shared_ptr<Player> player, int starty, int startx) :
 }
 
 void StatsView::draw() {
-  mvwprintw(window, 1, 1, "Bankroll: $%d", static_cast<int>(player->getBankroll()));
+  mvwprintw(window, 1, 1, "Bankroll: $       "); // TODO: fix this
+  mvwprintw(window, 1, 1, "Bankroll: $%0.0f", player->getBankroll());
 }
 
 void StatsView::update() {

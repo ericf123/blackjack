@@ -13,7 +13,8 @@ public:
   static const CardTotal MAX_VALUE = 21;
 
   Hand() : Hand(0) {}
-  Hand(Wager wager) : isSplit(false), isDoubled(false), wager(wager), value(0U) {}
+  Hand(Wager wager) : Hand(wager, 0) {}
+  Hand(Wager wager, int depth) : depth(depth), hasChild(false), isDoubledDown(false), wager(wager), value(0U) {}
 
   void reset();
   void addCard(Card card);
@@ -25,15 +26,19 @@ public:
 
   Wager getWager() const; 
   CardTotal getValue() const;
+  int getDepth() const;
 
   bool canSplit() const;
   bool canDouble() const;
-  bool isBlackjack() const;
+  bool isDoubled() const;
+  bool isSplit() const;
   bool isSoft() const;
+  bool isBlackjack() const;
   bool isBusted() const;
 private:
-  bool isSplit;
-  bool isDoubled;
+  int depth; 
+  bool hasChild;
+  bool isDoubledDown;
   Wager wager;
   CardTotal value;
   std::vector<Card> cards;

@@ -16,9 +16,9 @@ TableView::TableView(std::shared_ptr<Table> table, std::shared_ptr<Dealer> deale
   wattron(window, A_BOLD);
   printHCenter(bjdim::HAND_HEIGHT + 1, "Blackjack Pays %0.2f", table->getBlackjackPayoutRatio());
   if (table->shouldDealerHitSoft17()) {
-    printHCenter(bjdim::HAND_HEIGHT + 2, "Dealer Must Hit All 17s");
+    printHCenter(bjdim::HAND_HEIGHT + 2, "Dealer Must Hit Soft 17s");
   } else {
-    printHCenter(bjdim::HAND_HEIGHT + 2, "Dealer Must Stay on All 17s");
+    printHCenter(bjdim::HAND_HEIGHT + 2, "Dealer Stays on All 17s");
   }
   wattroff(window, A_BOLD);
 
@@ -26,10 +26,6 @@ TableView::TableView(std::shared_ptr<Table> table, std::shared_ptr<Dealer> deale
   using HandArray = std::array<HandView, MAX_PLAYERS + 1>;
 
   const auto handStartY = getBottomY() - bjdim::HAND_HEIGHT - 1;
-  dummyHand = std::make_unique<Hand>(123);
-  dummyHand->addCard(Card::Jack);
-  dummyHand->addCard(Card::Ace);
-
   handViews = std::make_unique<HandArray>(HandArray {
     HandView { nullptr, starty + 1, startx + width / 2 - bjdim::HAND_WIDTH / 2},  // dealer's hand
     HandView { nullptr, handStartY, startx + 1}, 
@@ -39,13 +35,16 @@ TableView::TableView(std::shared_ptr<Table> table, std::shared_ptr<Dealer> deale
     HandView { nullptr, handStartY, startx + bjdim::HAND_WIDTH * 4 + 5 }, 
   });
 
-  (*handViews.get())[DEALER_HAND_INDEX].setFirstCardVisible(false);
-
+  setDealerUpCardVisible(false);
   draw();
 }
 
 void TableView::update() {
   draw();
+}
+
+void TableView::setDealerUpCardVisible(bool visibility) {
+  (*handViews.get())[DEALER_HAND_INDEX].setFirstCardVisible(visibility);
 }
 
 void TableView::drawIndividualHand(const Hand& hand, size_t index) {

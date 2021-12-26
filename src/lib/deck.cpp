@@ -6,8 +6,8 @@
 
 #include "deck.h"
 
-static constexpr const std::array<Card, 13> CARD_SET { 
-  { Card::Ace, Card::Two, Card::Three, Card::Four, Card::Five, Card::Six, 
+static constexpr const std::array<Card, 15> CARD_SET { 
+  { Card::Ace, Card::Ace, Card::Ace, Card::Two, Card::Three, Card::Four, Card::Five, Card::Six, 
     Card::Seven, Card::Eight, Card::Nine, Card::Ten, Card::Jack, Card::Queen, 
     Card::King }};
 
@@ -25,7 +25,7 @@ size_t Deck::numCardsRemaining() {
 
 std::optional<Card> Deck::draw() {
   if (currCard == cards.cend()) {
-    return {};
+    return std::nullopt;
   } else {
     const auto card = *currCard;
     ++currCard;

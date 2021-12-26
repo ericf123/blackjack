@@ -15,12 +15,13 @@ public:
             int starty, int startx);
 
   virtual void update() override;
+
+  void setDealerUpCardVisible(bool visibility);
 private:
-  std::unique_ptr<Hand> dummyHand;
   std::shared_ptr<Table> table;
   std::shared_ptr<Dealer> dealer;
   std::unique_ptr<std::array<HandView, MAX_PLAYERS + 1>> handViews;
 
-  void drawIndividualHand(const Hand& hand, size_t index);
   void draw();
+  void drawIndividualHand(const Hand& hand, size_t index);
 };

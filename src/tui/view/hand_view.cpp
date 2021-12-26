@@ -47,7 +47,18 @@ void HandView::renderHand() {
       ++i;
     }
 
+    wattron(window, A_BOLD);
+    mvwprintw(window, height - 2, 2, "$       ", handToRender.getWager());
     mvwprintw(window, height - 2, 2, "$%d", handToRender.getWager());
+    // TODO: move to TableView?
+    if (handToRender.isSplit()) {
+      wattron(window, A_BLINK);
+      mvwprintw(window, height - 2, width - 4, "(%d)", handToRender.getDepth() + 1);
+      wattroff(window, A_BLINK);
+    } else {
+      mvwprintw(window, height - 2, width - 4, "   ", handToRender.getDepth() + 1);
+    }
+    wattroff(window, A_BOLD);
   }
 }
 

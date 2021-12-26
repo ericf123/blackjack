@@ -13,6 +13,7 @@
 #include "title_view.h"
 #include "tui.h"
 #include "tui_player.h"
+#include "wager_view.h"
 #include <unistd.h>
 
 int main(int argc, char** argv) {
@@ -47,8 +48,9 @@ int main(int argc, char** argv) {
   // create main views
   TitleView titleView;
   auto tableView = std::make_shared<TableView>(table, dealer, titleView.getBottomY(), 1 + bjdim::STATS_WIDTH);
+  auto wagerView = std::make_shared<WagerView>(tableView->getBottomY(), bjdim::STATS_WIDTH + 1);
 
-  auto player = std::make_shared<TuiPlayer>(1000, tableView);
+  auto player = std::make_shared<TuiPlayer>(1000, tableView, wagerView);
   dealer->addPlayerToTable(player);
 
   StatsView statsView { player, 1, 1 };
@@ -56,17 +58,28 @@ int main(int argc, char** argv) {
   drawViewsToScreen();
 
   while (true) {
-    dealer->playRound();
+    dealer->resetRound();
+    dealer->dealInitialCards();
+
+    tableView->setDealerUpCardVisible(false);
+    tableView->update();
+    drawViewsToScreen();
+
+    const auto dealerHasBlackjack = dealer->checkDealerBlackjack();
+
+    if (!dealerHasBlackjack) {
+      dealer->runPlayerActions();
+      dealer->playDealerHand();
+    } 
+
+    dealer->handleRoundResults();
+
+    tableView->setDealerUpCardVisible(true);
     tableView->update();
     statsView.update();
     drawViewsToScreen();
+    getch();
   }
-
-  // player->receiveCard(Card::Four);
-  // player->receiveCard(Card::Five);
-  // player->receiveCard(Card::Six);
-  // player->receiveCard(Card::Seven);
-  // handView.update();
 
   endwin();
   return 0;

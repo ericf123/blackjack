@@ -12,10 +12,10 @@ public:
   View(int height, int width, int starty, int startx);
 
   // view is not copyable
-  View(View& view) = delete;
-  View& operator=(View& view) = delete;
+  View(const View& view) = delete;
+  View& operator=(const View& view) = delete;
   View(View&& view);
-  ~View();
+  virtual ~View();
 
   virtual void update() = 0;
 

@@ -10,15 +10,15 @@ using ConstHandIter = std::vector<Hand>::const_iterator;
 
 class Player {
 public:
-  Player(Bankroll bankroll) : bankroll(bankroll), currHand(0), dealerUpCard({}) {}
+  Player(Bankroll bankroll) : bankroll(bankroll), currHand(0), dealerUpCard(std::nullopt) {}
   virtual void observeCard(Card card) = 0;
   virtual PlayerAction getNextAction() = 0;
   virtual Wager getWager() = 0;
-
   virtual void receiveCard(Card card);
-  void setDealerUpCard(Card card);
+  virtual void setDealerUpCard(Card card);
+  virtual void endCurrentHand();
+
   void beginRound(Card firstCard, Wager wager);
-  void endCurrentHand();
   void splitCurrentHand();
   void doubleCurrentHand();
 

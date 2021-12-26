@@ -12,6 +12,7 @@ CardView::CardView(std::optional<Card> card, int starty, int startx)
 }
 
 void CardView::draw() {
+  // TODO: less hacky way
   wclear(window); // otherwise 10 leaves its 0 when you go back to one char card
 
   std::string displayStr { "" };
