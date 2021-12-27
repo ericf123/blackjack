@@ -104,7 +104,8 @@ struct CardSet<1> {
   constexpr Card operator[](const size_t i) const { (void) i; return card; }
 };
 
-static const CardSet<std::variant_size_v<Card>> CARD_SET;
+static constexpr size_t CARD_SET_SIZE = std::variant_size_v<Card>;
+static constexpr CardSet<CARD_SET_SIZE> CARD_SET;
 
 constexpr Card indexToCard(size_t i) {
   return CARD_SET[i];
@@ -140,28 +141,25 @@ static inline std::ostream& operator<<(std::ostream& os, Card card) {
 }
 
 template <typename ItType> CardTotal sumCards(ItType begin, ItType end) {
-  (void) begin;
-  (void) end;
-  return 0;
-  // auto total = 0U;
-  // auto numAces = 0;
+  auto total = 0U;
+  auto numAces = 0;
 
-  // for (auto curr = begin; curr != end; ++curr) {
-  //   auto cardEnumValue = static_cast<CardTotal>(*curr);
-  //   total += std::min(cardEnumValue, 10U);
+  for (auto curr = begin; curr != end; ++curr) {
+    auto rank = std::visit([](const auto& arg) -> Rank { return arg.rank; }, *curr);
+    total += std::min(static_cast<unsigned int>(rank), 10U);
 
-  //   if (*curr == Card::Ace) {
-  //     ++numAces;
-  //   }
-  // }
+    if (rank == Rank::Ace) {
+      ++numAces;
+    }
+  }
 
-  // // can have at most one Ace with value of 11
-  // // by default Ace has value of 1
-  // if (numAces > 0 && total + 10 <= 21) {
-  //   total += 10;
-  // }
+  // can have at most one Ace with value of 11
+  // by default Ace has value of 1
+  if (numAces > 0 && total + 10 <= 21) {
+    total += 10;
+  }
 
-  // return total;
+  return total;
 }
 
 } // namespace bjcard

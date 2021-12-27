@@ -46,8 +46,11 @@ int Hand::getDepth() const { return depth; }
 bool Hand::canDouble() const { return !isDoubled() && cards.size() == 2; }
 
 bool Hand::canSplit() const {
-  // return cards.size() == 2 && cards[0] == cards[1];
-  return true;
+  const auto rankVisitor = [](const auto& card) -> Rank { return card.rank; };
+  const auto firstCardRank = std::visit(rankVisitor, cards[0]);
+  const auto secondCardRank = std::visit(rankVisitor, cards[1]);
+  // TODO split cards with same value (e.g Q and K)
+  return cards.size() == 2 && firstCardRank == secondCardRank; 
 }
 
 bool Hand::isSplit() const { return hasChild || depth > 0; }
