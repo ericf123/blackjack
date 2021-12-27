@@ -12,11 +12,17 @@ public:
   virtual ~WagerView() override;
   virtual void update() override {}
   Wager getWager();
+  void setMinWager(Wager wager);
+  void setMaxWager(Wager wager);
 
 private:
   static constexpr size_t NUM_FIELDS = 1;
   Wager prevWager;
+  Wager minWager;
+  Wager maxWager;
   // TODO: use unique_ptr
   FORM *form;
   std::array<FIELD *, NUM_FIELDS + 1> fields;
+
+  void setWagerRange(Wager min, Wager max);
 };

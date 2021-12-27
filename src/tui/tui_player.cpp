@@ -86,4 +86,7 @@ void TuiPlayer::endCurrentHand() {
   drawViewsToScreen();
 }
 
-Wager TuiPlayer::getWager() { return wagerView->getWager(); }
+Wager TuiPlayer::getWager() {
+  wagerView->setMaxWager(static_cast<Wager>(bankroll));
+  return wagerView->getWager();
+}

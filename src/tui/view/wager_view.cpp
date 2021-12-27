@@ -19,11 +19,11 @@ WagerView::WagerView(int starty, int startx)
   field_opts_on(fields[0], O_VISIBLE);
   field_opts_on(fields[0], O_PUBLIC);
   field_opts_on(fields[0], O_BLANK);
-  set_field_type(fields[0], TYPE_INTEGER, 0, 0, std::numeric_limits<int>::max);
   set_field_just(fields[0], JUSTIFY_RIGHT);
   set_field_fore(fields[0], COLOR_PAIR(bjcolor::PAIR_BKGD_INV));
   set_field_back(fields[0], COLOR_PAIR(bjcolor::PAIR_BKGD_INV));
   set_field_fore(fields[0], A_BOLD);
+  setWagerRange(0, std::numeric_limits<Wager>::max());
 
   form = new_form(&fields.front());
   set_form_win(form, window);
@@ -85,6 +85,9 @@ Wager WagerView::getWager() {
 }
 
 WagerView::WagerView(WagerView &&view) : View(std::move(view)) {
+  prevWager = view.prevWager;
+  minWager = view.minWager;
+  maxWager = view.maxWager;
   form = view.form;
   fields = view.fields;
   view.form = nullptr;
@@ -107,5 +110,17 @@ WagerView::~WagerView() {
 
   if (window != nullptr) {
     delwin(window);
+  }
+}
+
+void WagerView::setMaxWager(Wager wager) { setWagerRange(minWager, wager); }
+
+void WagerView::setMinWager(Wager wager) { setWagerRange(wager, maxWager); }
+
+void WagerView::setWagerRange(Wager min, Wager max) {
+  minWager = min;
+  maxWager = max;
+  if (fields[0] != nullptr) {
+    set_field_type(fields[0], TYPE_INTEGER, 0, minWager, maxWager);
   }
 }
