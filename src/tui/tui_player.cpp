@@ -74,7 +74,12 @@ void TuiPlayer::splitCurrentHand() {
 }
 
 void TuiPlayer::endCurrentHand() {
-  if (currHand < hands.size() && hands[currHand].isDoubled()) {
+  const auto justDoubled =
+      currHand < hands.size() && hands[currHand].isDoubled();
+  const auto finishedIntermediateSplitHand = currHand < hands.size() &&
+                                             !playingLastHand() &&
+                                             hands[currHand].isSplit();
+  if (justDoubled || finishedIntermediateSplitHand) {
     getch();
   }
 
