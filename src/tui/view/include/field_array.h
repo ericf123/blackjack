@@ -12,10 +12,10 @@ public:
     }
   }
   // cannot copy field array
-  FieldArray(const FieldArray &other) = delete;
-  FieldArray &operator=(const FieldArray &other) = delete;
+  FieldArray(const FieldArray& other) = delete;
+  FieldArray& operator=(const FieldArray& other) = delete;
 
-  FieldArray(FieldArray &&other) {
+  FieldArray(FieldArray&& other) {
     for (auto i = 0U; i < other.fields.size(); ++i) {
       fields[i] = other.fields[i];
       other.fields[i] = nullptr;
@@ -23,16 +23,16 @@ public:
   }
 
   ~FieldArray() {
-    for (auto *field : fields) {
+    for (auto* field : fields) {
       if (field != nullptr) {
         free_field(field);
       }
     }
   }
 
-  FIELD *&operator[](int i) { return fields[i]; }
+  FIELD*& operator[](int i) { return fields[i]; }
 
 private:
   // extra slot for null pointer at the end
-  std::array<FIELD *, N_FIELDS + 1> fields;
+  std::array<FIELD*, N_FIELDS + 1> fields;
 };

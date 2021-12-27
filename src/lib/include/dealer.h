@@ -9,7 +9,7 @@ public:
       : firstRound(true), table(std::move(table)) {}
   void addPlayerToTable(std::shared_ptr<Player> player);
 
-  const Hand &getDealerHand();
+  const Hand& getDealerHand();
 
   void resetRound();
   void playRound();
@@ -28,5 +28,5 @@ private:
 
   void publishUpCard(Card card);
   bool shouldPlayDealerHand();
-  bool handlePlayerAction(Player &player, PlayerAction action);
+  bool handlePlayerAction(Player& player, PlayerAction action);
 };

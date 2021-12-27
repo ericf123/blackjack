@@ -14,7 +14,7 @@
 #include <ncurses.h>
 #include <panel.h>
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   (void)argc;
   (void)argv;
 

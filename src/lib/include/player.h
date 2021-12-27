@@ -35,7 +35,7 @@ public:
   bool playingLastHand();
   CardTotal getCurrentHandValue();
   Wager getCurrentHandWager();
-  const Hand *getCurrentHand();
+  const Hand* getCurrentHand();
 
 protected:
   Bankroll bankroll;

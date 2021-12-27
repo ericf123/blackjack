@@ -30,7 +30,7 @@ static inline std::string getDisplayStr(Card card) {
   return DISPLAY_STRS[static_cast<size_t>(card)];
 }
 
-static inline std::ostream &operator<<(std::ostream &os, Card card) {
+static inline std::ostream& operator<<(std::ostream& os, Card card) {
   os << getDisplayStr(card);
   return os;
 }

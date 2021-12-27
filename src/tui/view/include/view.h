@@ -7,8 +7,8 @@
 #include <ncurses.h>
 #include <panel.h>
 
-void deleteWindow(WINDOW *window);
-void deletePanel(PANEL *panel);
+void deleteWindow(WINDOW* window);
+void deletePanel(PANEL* panel);
 
 using WindowPtr = std::unique_ptr<WINDOW, decltype(&deleteWindow)>;
 using PanelPtr = std::unique_ptr<PANEL, decltype(&deletePanel)>;
@@ -18,9 +18,9 @@ public:
   View(int height, int width, int starty, int startx);
 
   // view is not copyable
-  View(const View &view) = delete;
-  View &operator=(const View &view) = delete;
-  View(View &&view) = default;
+  View(const View& view) = delete;
+  View& operator=(const View& view) = delete;
+  View(View&& view) = default;
   virtual ~View() = default;
 
   virtual void update() = 0;
@@ -37,7 +37,7 @@ public:
   void sendToFront();
 
   template <typename... Args>
-  void printHCenter(int starty, const char *fmt, Args... args) {
+  void printHCenter(int starty, const char* fmt, Args... args) {
     const auto formatted = strfmt(fmt, args...);
     std::string displayStr{ "ERROR" };
 

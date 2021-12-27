@@ -47,8 +47,8 @@ void TableView::setDealerUpCardVisible(bool visibility) {
   (*handViews.get())[DEALER_HAND_INDEX].setFirstCardVisible(visibility);
 }
 
-void TableView::drawIndividualHand(const Hand &hand, size_t index) {
-  auto &handView = (*handViews.get())[index];
+void TableView::drawIndividualHand(const Hand& hand, size_t index) {
+  auto& handView = (*handViews.get())[index];
   handView.setHand(&hand);
   handView.update();
   handView.show();
@@ -61,8 +61,8 @@ void TableView::draw() {
   auto playerIter = table->getBeginPlayer();
   for (auto i = 1U; i < MAX_PLAYERS + 1; ++i) {
     if (playerIter != table->getEndPlayer()) {
-      const auto &player = *playerIter;
-      const auto *hand = player->getCurrentHand();
+      const auto& player = *playerIter;
+      const auto* hand = player->getCurrentHand();
 
       if (hand != nullptr) {
         drawIndividualHand(*hand, i);

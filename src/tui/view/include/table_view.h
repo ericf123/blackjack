@@ -25,5 +25,5 @@ private:
   std::unique_ptr<std::array<HandView, MAX_PLAYERS + 1>> handViews;
 
   void draw();
-  void drawIndividualHand(const Hand &hand, size_t index);
+  void drawIndividualHand(const Hand& hand, size_t index);
 };

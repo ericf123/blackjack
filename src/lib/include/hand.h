@@ -47,7 +47,7 @@ private:
   std::vector<Card> cards;
 };
 
-static inline std::ostream &operator<<(std::ostream &os, Hand hand) {
+static inline std::ostream& operator<<(std::ostream& os, Hand hand) {
   for (auto currCardIter = hand.getBeginIter();
        currCardIter != hand.getEndIter(); ++currCardIter) {
     os << *currCardIter << " ";

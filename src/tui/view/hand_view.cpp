@@ -2,7 +2,7 @@
 #include <memory>
 #include <string>
 
-HandView::HandView(const Hand *hand, int starty, int startx)
+HandView::HandView(const Hand* hand, int starty, int startx)
     : View(bjdim::HAND_HEIGHT, bjdim::HAND_WIDTH, starty, startx), hand(hand),
       hideFirstCard(false) {
   // border
@@ -31,13 +31,13 @@ HandView::HandView(const Hand *hand, int starty, int startx)
 void HandView::renderHand() {
   auto i = 0U;
   if (hand != nullptr) {
-    const auto &handToRender = *hand;
+    const auto& handToRender = *hand;
 
     for (auto cardIter = handToRender.getBeginIter();
          cardIter != handToRender.getEndIter(); ++cardIter) {
       // silently fail to render hands more than 6 cards in length
       if (i < cardViews->size()) {
-        auto &currView = (*cardViews.get())[i];
+        auto& currView = (*cardViews.get())[i];
 
         if (hideFirstCard && cardIter == handToRender.getBeginIter()) {
           currView.setCard(std::nullopt);
@@ -68,7 +68,7 @@ void HandView::renderHand() {
   }
 }
 
-void HandView::setHand(const Hand *newHand) { hand = newHand; }
+void HandView::setHand(const Hand* newHand) { hand = newHand; }
 
 void HandView::update() { renderHand(); }
 
@@ -78,8 +78,8 @@ void HandView::show() {
 }
 
 void HandView::hide() {
-  auto &viewsArr = *cardViews.get();
-  for (auto &view : viewsArr) {
+  auto& viewsArr = *cardViews.get();
+  for (auto& view : viewsArr) {
     view.hide();
   }
 

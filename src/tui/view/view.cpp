@@ -6,13 +6,13 @@
 #include <panel.h>
 #include <string>
 
-void deleteWindow(WINDOW *window) {
+void deleteWindow(WINDOW* window) {
   if (window != nullptr) {
     delwin(window);
   }
 }
 
-void deletePanel(PANEL *panel) {
+void deletePanel(PANEL* panel) {
   if (panel != nullptr) {
     del_panel(panel);
   }

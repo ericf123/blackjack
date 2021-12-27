@@ -37,7 +37,7 @@ Wager Player::getCurrentHandWager() {
   return 0;
 }
 
-const Hand *Player::getCurrentHand() {
+const Hand* Player::getCurrentHand() {
   if (currHand < hands.size()) {
     return &hands[currHand];
   }

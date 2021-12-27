@@ -20,7 +20,7 @@ void Dealer::playRound() {
   handleRoundResults();
 }
 
-const Hand &Dealer::getDealerHand() { return dealerHand; }
+const Hand& Dealer::getDealerHand() { return dealerHand; }
 
 void Dealer::dealInitialCards() {
   table->shuffleIfNeeded();
@@ -28,7 +28,7 @@ void Dealer::dealInitialCards() {
   // deal everyone with a non-zero wager the first card
   for (auto playerIter = table->getBeginPlayer();
        playerIter != table->getEndPlayer(); ++playerIter) {
-    auto &player = **playerIter;
+    auto& player = **playerIter;
     const auto wager = player.getWager();
 
     if (wager > 0) {
@@ -43,7 +43,7 @@ void Dealer::dealInitialCards() {
   // deal everyone with a non-zero wager the second card
   for (auto playerIter = table->getBeginPlayer();
        playerIter != table->getEndPlayer(); ++playerIter) {
-    auto &player = **playerIter;
+    auto& player = **playerIter;
     if (player.getCurrentHandWager() > 0) {
       player.receiveCard(table->drawCard());
     }
@@ -58,7 +58,7 @@ void Dealer::dealInitialCards() {
 void Dealer::publishUpCard(Card card) {
   for (auto playerIter = table->getBeginPlayer();
        playerIter != table->getEndPlayer(); ++playerIter) {
-    auto &player = **playerIter;
+    auto& player = **playerIter;
     player.setDealerUpCard(card);
   }
 }
@@ -68,7 +68,7 @@ bool Dealer::checkDealerBlackjack() { return dealerHand.isBlackjack(); }
 void Dealer::runPlayerActions() {
   for (auto playerIter = table->getBeginPlayer();
        playerIter != table->getEndPlayer(); ++playerIter) {
-    auto &player = **playerIter;
+    auto& player = **playerIter;
     auto action = player.getNextAction();
     while (handlePlayerAction(player, action)) {
       action = player.getNextAction();
@@ -76,7 +76,7 @@ void Dealer::runPlayerActions() {
   }
 }
 
-bool Dealer::handlePlayerAction(Player &player, PlayerAction action) {
+bool Dealer::handlePlayerAction(Player& player, PlayerAction action) {
   auto drawCard = action == PlayerAction::Hit;
 
   if (action == PlayerAction::Split) {
@@ -118,7 +118,7 @@ bool Dealer::handlePlayerAction(Player &player, PlayerAction action) {
 bool Dealer::shouldPlayDealerHand() {
   for (auto playerIter = table->getBeginPlayer();
        playerIter != table->getEndPlayer(); ++playerIter) {
-    auto &player = **playerIter;
+    auto& player = **playerIter;
     for (auto hand = player.getBeginHand(); hand != player.getEndHand();
          ++hand) {
       if (!hand->isBusted() && !hand->isBlackjack()) {
@@ -152,7 +152,7 @@ void Dealer::playDealerHand() {
 void Dealer::handleRoundResults() {
   for (auto playerIter = table->getBeginPlayer();
        playerIter != table->getEndPlayer(); ++playerIter) {
-    auto &player = **playerIter;
+    auto& player = **playerIter;
     for (auto hand = player.getBeginHand(); hand != player.getEndHand();
          ++hand) {
       const auto handValue = hand->getValue();
