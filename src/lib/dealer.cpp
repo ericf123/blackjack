@@ -69,9 +69,13 @@ void Dealer::runPlayerActions() {
   for (auto playerIter = table->getBeginPlayer();
        playerIter != table->getEndPlayer(); ++playerIter) {
     auto& player = **playerIter;
-    auto action = player.getNextAction();
-    while (handlePlayerAction(player, action)) {
-      action = player.getNextAction();
+    const auto hasHandsToPlay = player.getBeginHand() != player.getEndHand();
+
+    if (hasHandsToPlay) {
+      auto action = player.getNextAction();
+      while (handlePlayerAction(player, action)) {
+        action = player.getNextAction();
+      }
     }
   }
 }

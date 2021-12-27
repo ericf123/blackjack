@@ -15,6 +15,7 @@ WagerView::WagerView(int starty, int startx)
   fields[1] = NULL;
 
   field_opts_off(fields[0], O_AUTOSKIP);
+  field_opts_off(fields[0], O_NULLOK);
   field_opts_on(fields[0], O_EDIT);
   field_opts_on(fields[0], O_VISIBLE);
   field_opts_on(fields[0], O_PUBLIC);
@@ -56,6 +57,8 @@ Wager WagerView::getWager() {
     set_current_field(form.get(), fields[0]);
 
     int ch;
+    auto firstDigit = true;
+
     while ((ch = getch()) != '\n') {
       switch (ch) {
       case KEY_BACKSPACE:
@@ -67,6 +70,12 @@ Wager WagerView::getWager() {
       default:
         // this makes it impossible to enter negative number
         if (ch >= '0' && ch <= '9') {
+          // clear field on the first character that the user types
+          if (firstDigit) {
+            firstDigit = false;
+            form_driver(form.get(), REQ_CLR_FIELD);
+          }
+
           form_driver(form.get(), ch);
         }
         break;
