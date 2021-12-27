@@ -14,6 +14,7 @@ public:
   TableView(std::shared_ptr<Table> table, std::shared_ptr<Dealer> dealer,
             int starty, int startx);
 
+  virtual ~TableView() = default;
   virtual void update() override;
 
   void setDealerUpCardVisible(bool visibility);

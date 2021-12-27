@@ -49,12 +49,14 @@ int main(int argc, char **argv) {
   TitleView titleView;
   const auto tableView = std::make_shared<TableView>(
       table, dealer, titleView.getBottomY(), 1 + bjdim::STATS_WIDTH);
+
   const auto wagerViewStarty =
       tableView->getTopY() +
       (tableView->getHeight() / 2 - bjdim::WAGER_HEIGHT / 2);
   const auto wagerViewStartx =
       tableView->getLeftX() +
       (tableView->getWidth() / 2 - bjdim::WAGER_WIDTH / 2);
+
   const auto wagerView =
       std::make_shared<WagerView>(wagerViewStarty, wagerViewStartx);
 
@@ -87,9 +89,16 @@ int main(int argc, char **argv) {
     statsView.update();
     drawViewsToScreen();
 
-    getch(); // wait for input so player can see round results
+    // wait for input so player can see round results
+    if (getch() == 'q') {
+      break;
+    }
   }
 
   endwin();
+
+  // without this there is a cyclic dependency between table/player/tableview
+  table->drainPlayers();
+
   return 0;
 }

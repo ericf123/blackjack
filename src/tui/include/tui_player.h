@@ -32,6 +32,7 @@ public:
   virtual void endCurrentHand() override;
 
 private:
+  // TODO: use weak_ptr to avoid cyclic dependencies?
   std::shared_ptr<TableView> tableView;
   std::shared_ptr<WagerView> wagerView;
   PlayerAction getDesiredAction();

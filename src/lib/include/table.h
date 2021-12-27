@@ -19,6 +19,7 @@ public:
   PlayerPtrIter getEndPlayer();
 
   void addPlayer(std::shared_ptr<Player> player);
+  void drainPlayers();
   void showCardToPlayers(Card card);
   Card drawCard();
   Card drawCard(bool observable);

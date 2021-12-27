@@ -13,7 +13,8 @@ CardView::CardView(std::optional<Card> card, int starty, int startx)
 
 void CardView::draw() {
   // TODO: less hacky way
-  wclear(window); // otherwise 10 leaves its 0 when you go back to one char card
+  wclear(window.get()); // otherwise 10 leaves its 0 when you go back to one
+                        // char card
 
   std::string displayStr{ "" };
   auto color_pair = COLOR_PAIR(bjcolor::PAIR_CARD_DOWN);
@@ -23,10 +24,10 @@ void CardView::draw() {
     color_pair = COLOR_PAIR(bjcolor::PAIR_CARD_BLACK);
   }
 
-  wattron(window, color_pair);
-  wbkgd(window, color_pair);
-  box(window, 0, 0);
-  mvwprintw(window, height / 2, width / 2, "%s", displayStr.c_str());
+  wattron(window.get(), color_pair);
+  wbkgd(window.get(), color_pair);
+  box(window.get(), 0, 0);
+  mvwprintw(window.get(), height / 2, width / 2, "%s", displayStr.c_str());
 }
 
 void CardView::update() { draw(); }

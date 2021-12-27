@@ -9,6 +9,8 @@ void Table::addPlayer(std::shared_ptr<Player> player) {
   players.push_back(player);
 }
 
+void Table::drainPlayers() { players.clear(); }
+
 PlayerPtrIter Table::getBeginPlayer() { return players.begin(); }
 
 PlayerPtrIter Table::getEndPlayer() { return players.end(); }

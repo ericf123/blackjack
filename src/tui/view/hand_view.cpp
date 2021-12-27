@@ -6,9 +6,9 @@ HandView::HandView(const Hand *hand, int starty, int startx)
     : View(bjdim::HAND_HEIGHT, bjdim::HAND_WIDTH, starty, startx), hand(hand),
       hideFirstCard(false) {
   // border
-  wattron(window, COLOR_PAIR(bjcolor::PAIR_BKGD));
-  wbkgd(window, COLOR_PAIR(bjcolor::PAIR_BKGD));
-  box(window, 0, 0);
+  wattron(window.get(), COLOR_PAIR(bjcolor::PAIR_BKGD));
+  wbkgd(window.get(), COLOR_PAIR(bjcolor::PAIR_BKGD));
+  box(window.get(), 0, 0);
 
   // layout CardViews that display each card (all initially face down)
   using CardArray = std::array<CardView, MAX_CARDS>;
@@ -52,19 +52,19 @@ void HandView::renderHand() {
       ++i;
     }
 
-    wattron(window, A_BOLD);
-    mvwprintw(window, height - 2, 2, "$       ");
-    mvwprintw(window, height - 2, 2, "$%d", handToRender.getWager());
+    wattron(window.get(), A_BOLD);
+    mvwprintw(window.get(), height - 2, 2, "$       ");
+    mvwprintw(window.get(), height - 2, 2, "$%d", handToRender.getWager());
     // TODO: move to TableView?
     if (handToRender.isSplit()) {
-      wattron(window, A_BLINK);
-      mvwprintw(window, height - 2, width - 4, "(%d)",
+      wattron(window.get(), A_BLINK);
+      mvwprintw(window.get(), height - 2, width - 4, "(%d)",
                 handToRender.getDepth() + 1);
-      wattroff(window, A_BLINK);
+      wattroff(window.get(), A_BLINK);
     } else {
-      mvwprintw(window, height - 2, width - 4, "   ");
+      mvwprintw(window.get(), height - 2, width - 4, "   ");
     }
-    wattroff(window, A_BOLD);
+    wattroff(window.get(), A_BOLD);
   }
 }
 
@@ -73,7 +73,7 @@ void HandView::setHand(const Hand *newHand) { hand = newHand; }
 void HandView::update() { renderHand(); }
 
 void HandView::show() {
-  show_panel(panel);
+  show_panel(panel.get());
   renderHand();
 }
 
@@ -83,7 +83,7 @@ void HandView::hide() {
     view.hide();
   }
 
-  hide_panel(panel);
+  hide_panel(panel.get());
 }
 
 void HandView::setFirstCardVisible(bool visible) { hideFirstCard = !visible; }

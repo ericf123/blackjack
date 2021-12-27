@@ -9,11 +9,11 @@ TableView::TableView(std::shared_ptr<Table> table,
     : View(bjdim::TABLE_HEIGHT, COLS - bjdim::STATS_WIDTH - 2, starty, startx),
       table(table), dealer(dealer) {
   // border
-  wattron(window, COLOR_PAIR(bjcolor::PAIR_BKGD));
-  wbkgd(window, COLOR_PAIR(bjcolor::PAIR_BKGD));
-  box(window, 0, 0);
+  wattron(window.get(), COLOR_PAIR(bjcolor::PAIR_BKGD));
+  wbkgd(window.get(), COLOR_PAIR(bjcolor::PAIR_BKGD));
+  box(window.get(), 0, 0);
 
-  wattron(window, A_BOLD);
+  wattron(window.get(), A_BOLD);
   printHCenter(bjdim::HAND_HEIGHT + 1, "Blackjack Pays %0.2f",
                table->getBlackjackPayoutRatio());
   if (table->shouldDealerHitSoft17()) {
@@ -21,7 +21,7 @@ TableView::TableView(std::shared_ptr<Table> table,
   } else {
     printHCenter(bjdim::HAND_HEIGHT + 2, "Dealer Stays on All 17s");
   }
-  wattroff(window, A_BOLD);
+  wattroff(window.get(), A_BOLD);
 
   // layout CardViews that display each card (all initially face down)
   using HandArray = std::array<HandView, MAX_PLAYERS + 1>;

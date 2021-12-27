@@ -7,6 +7,12 @@
 #include <ncurses.h>
 #include <panel.h>
 
+void deleteWindow(WINDOW *window);
+void deletePanel(PANEL *panel);
+
+using WindowPtr = std::unique_ptr<WINDOW, decltype(&deleteWindow)>;
+using PanelPtr = std::unique_ptr<PANEL, decltype(&deletePanel)>;
+
 class View {
 public:
   View(int height, int width, int starty, int startx);
@@ -14,8 +20,8 @@ public:
   // view is not copyable
   View(const View &view) = delete;
   View &operator=(const View &view) = delete;
-  View(View &&view);
-  virtual ~View();
+  View(View &&view) = default;
+  virtual ~View() = default;
 
   virtual void update() = 0;
 
@@ -42,13 +48,13 @@ public:
     const auto startx = width / 2 - displayStr.size() / 2;
 
     if (startx >= 0) {
-      mvwprintw(window, starty, startx, "%s", displayStr.c_str());
+      mvwprintw(window.get(), starty, startx, "%s", displayStr.c_str());
     }
   }
 
 protected:
-  WINDOW *window;
-  PANEL *panel;
+  WindowPtr window;
+  PanelPtr panel;
   int height;
   int width;
   int starty;
