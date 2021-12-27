@@ -46,7 +46,8 @@ int Hand::getDepth() const { return depth; }
 bool Hand::canDouble() const { return !isDoubled() && cards.size() == 2; }
 
 bool Hand::canSplit() const {
-  return cards.size() == 2 && cards[0] == cards[1];
+  // return cards.size() == 2 && cards[0] == cards[1];
+  return true;
 }
 
 bool Hand::isSplit() const { return hasChild || depth > 0; }
@@ -61,7 +62,7 @@ bool Hand::isSoft() const {
   // TODO: better way?
   // hand is soft if we can add 10 to it and the value doesn't change
   std::vector<Card> tempCards{ cards };
-  tempCards.push_back(Card::Ten);
+  // tempCards.push_back(Card::Ten);
 
   auto newValue = sumCards(tempCards.begin(), tempCards.end());
   auto isSoft = newValue == value;

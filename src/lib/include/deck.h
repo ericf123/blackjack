@@ -6,6 +6,8 @@
 
 #include "card.h"
 
+using namespace bjcard;
+
 class Deck {
 public:
   Deck(size_t numDecks);

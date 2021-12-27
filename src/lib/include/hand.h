@@ -5,6 +5,7 @@
 #include <optional>
 #include <vector>
 
+using namespace bjcard;
 using ConstCardIterator = std::vector<Card>::const_iterator;
 using Wager = uint32_t;
 
@@ -50,7 +51,8 @@ private:
 static inline std::ostream& operator<<(std::ostream& os, Hand hand) {
   for (auto currCardIter = hand.getBeginIter();
        currCardIter != hand.getEndIter(); ++currCardIter) {
-    os << *currCardIter << " ";
+    std::visit([&os](auto&& arg) { os << arg.rank; }, *currCardIter);
+    os.write(" ", 1);
   }
   return os;
 }

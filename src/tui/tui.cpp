@@ -18,11 +18,11 @@ int main(int argc, char** argv) {
   (void)argc;
   (void)argv;
 
+  setlocale(LC_ALL, "");
   initscr();
   cbreak();
   noecho();
   curs_set(0); // hide cursor
-  setlocale(LC_ALL, "");
 
   if (has_colors()) {
     start_color();

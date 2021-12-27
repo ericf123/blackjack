@@ -3,6 +3,8 @@
 #include "card.h"
 #include "table.h"
 
+using namespace bjcard;
+
 class Dealer {
 public:
   Dealer(std::shared_ptr<Table> table)
