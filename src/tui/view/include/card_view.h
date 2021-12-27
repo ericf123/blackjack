@@ -6,6 +6,8 @@
 #include <ncurses.h>
 #include <optional>
 
+using namespace bjcard;
+
 class CardView : public View {
 public:
   CardView(std::optional<Card> card, int starty, int startx);

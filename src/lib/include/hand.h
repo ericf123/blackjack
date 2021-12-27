@@ -5,6 +5,7 @@
 #include <optional>
 #include <vector>
 
+using namespace bjcard;
 using ConstCardIterator = std::vector<Card>::const_iterator;
 using Wager = uint32_t;
 

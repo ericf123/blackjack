@@ -46,7 +46,11 @@ int Hand::getDepth() const { return depth; }
 bool Hand::canDouble() const { return !isDoubled() && cards.size() == 2; }
 
 bool Hand::canSplit() const {
-  return cards.size() == 2 && cards[0] == cards[1];
+  // only cards 10 or higher can have different ranks and still be splitable
+  // e.g. split J, Q
+  const auto clippedFirstRank = std::min(cards[0].rank, Rank::Ten);
+  const auto clippedSecondRank = std::min(cards[1].rank, Rank::Ten);
+  return cards.size() == 2 && clippedFirstRank == clippedSecondRank;
 }
 
 bool Hand::isSplit() const { return hasChild || depth > 0; }
@@ -61,7 +65,7 @@ bool Hand::isSoft() const {
   // TODO: better way?
   // hand is soft if we can add 10 to it and the value doesn't change
   std::vector<Card> tempCards{ cards };
-  tempCards.push_back(Card::Ten);
+  tempCards.push_back(Card{ Rank::Ten, Suit::Spades });
 
   auto newValue = sumCards(tempCards.begin(), tempCards.end());
   auto isSoft = newValue == value;

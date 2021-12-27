@@ -33,6 +33,7 @@ Card Table::drawCard(bool observable) {
 Card Table::drawCard() { return drawCard(true); }
 
 void Table::shuffleIfNeeded() {
+  // TODO: shuffle with 2 decks left??
   const auto minCards = (players.size() + 1) * EST_MAX_PLAYER_CARDS_PER_ROUND;
   if (firstRound || deck.numCardsRemaining() < minCards) {
     forceShuffle();
