@@ -8,7 +8,7 @@ void TuiPlayer::observeCard(Card card) { (void)card; }
 
 void TuiPlayer::receiveCard(Card card) {
   hands[currHand].addCard(card);
-  tableView->update();
+  updateViews();
   drawViewsToScreen();
 }
 
@@ -69,7 +69,7 @@ PlayerAction TuiPlayer::getDesiredAction() {
 
 void TuiPlayer::splitCurrentHand() {
   hands.push_back(hands[currHand].split());
-  tableView->update();
+  updateViews();
   drawViewsToScreen();
 }
 
@@ -82,11 +82,24 @@ void TuiPlayer::endCurrentHand() {
     ++currHand;
   }
 
-  tableView->update();
+  updateViews();
   drawViewsToScreen();
 }
 
 Wager TuiPlayer::getWager() {
-  wagerView->setMaxWager(static_cast<Wager>(bankroll));
-  return wagerView->getWager();
+  auto wager = 0;
+
+  if (!wagerView.expired()) {
+    auto ownedWagerView = wagerView.lock();
+    ownedWagerView->setMaxWager(static_cast<Wager>(bankroll));
+    wager = ownedWagerView->getWager();
+  }
+
+  return wager;
+}
+
+void TuiPlayer::updateViews() {
+  if (!tableView.expired()) {
+    tableView.lock()->update();
+  }
 }

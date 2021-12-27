@@ -96,9 +96,5 @@ int main(int argc, char **argv) {
   }
 
   endwin();
-
-  // without this there is a cyclic dependency between table/player/tableview
-  table->drainPlayers();
-
   return 0;
 }

@@ -10,8 +10,8 @@
 
 class TuiPlayer : public Player {
 public:
-  TuiPlayer(double bankroll, std::shared_ptr<TableView> tableView,
-            std::shared_ptr<WagerView> wagerView, chtype hitKey, chtype stayKey,
+  TuiPlayer(double bankroll, std::weak_ptr<TableView> tableView,
+            std::weak_ptr<WagerView> wagerView, chtype hitKey, chtype stayKey,
             chtype doubleKey, chtype splitKey)
       : Player(bankroll), tableView(tableView), wagerView(wagerView),
         hitKey(hitKey), stayKey(stayKey), doubleKey(doubleKey),
@@ -33,8 +33,8 @@ public:
 
 private:
   // TODO: use weak_ptr to avoid cyclic dependencies?
-  std::shared_ptr<TableView> tableView;
-  std::shared_ptr<WagerView> wagerView;
+  std::weak_ptr<TableView> tableView;
+  std::weak_ptr<WagerView> wagerView;
   PlayerAction getDesiredAction();
   PlayerAction sanitizeAction(PlayerAction action);
 
@@ -43,5 +43,5 @@ private:
   int doubleKey;
   int splitKey;
 
-  void displayHands();
+  void updateViews();
 };
