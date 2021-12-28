@@ -12,9 +12,11 @@ class HandView : public View {
 public:
   static constexpr size_t MAX_CARDS = 6;
 
-  HandView(const Hand* hand, int starty, int startx);
+  HandView(std::optional<ConstHandIter> hand, int starty, int startx);
 
-  void setHand(const Hand* hand);
+  void setHandRange(std::optional<ConstHandIter> beginHand,
+                    std::optional<ConstHandIter> hand,
+                    std::optional<ConstHandIter> endHand);
   void setFirstCardVisible(bool visible);
 
   virtual void update() override;
@@ -22,7 +24,9 @@ public:
   virtual void hide() override;
 
 private:
-  const Hand* hand;
+  std::optional<ConstHandIter> beginHand;
+  std::optional<ConstHandIter> endHand;
+  std::optional<ConstHandIter> hand;
   bool hideFirstCard;
   std::unique_ptr<std::array<CardView, MAX_CARDS>> cardViews;
 

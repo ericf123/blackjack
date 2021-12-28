@@ -1,14 +1,15 @@
 #include "player.h"
+#include <optional>
 
-void Player::receiveCard(const Card& card) { hands[currHand].addCard(card); }
+void Player::receiveCard(const Card& card) { currHand->addCard(card); }
 
 void Player::setDealerUpCard(const Card& card) { dealerUpCard.emplace(card); }
 
 void Player::beginRound(const Card& firstCard, Wager wager) {
-  hands.erase(hands.begin(), hands.end());
+  hands.clear();
 
-  hands.push_back(Hand(wager));
-  currHand = 0;
+  hands.push_front(Hand(wager));
+  currHand = hands.begin();
 
   receiveCard(firstCard);
 }
@@ -19,30 +20,30 @@ void Player::debit(Wager losses) { bankroll -= losses; }
 
 Bankroll Player::getBankroll() { return bankroll; }
 
-bool Player::playingLastHand() { return currHand == hands.size() - 1; }
+bool Player::playingLastHand() { return std::next(currHand) == hands.end(); }
 
 CardTotal Player::getCurrentHandValue() {
-  if (currHand < hands.size()) {
-    return hands[currHand].getValue();
+  if (currHand != hands.end()) {
+    return currHand->getValue();
   }
 
   return 0;
 }
 
 Wager Player::getCurrentHandWager() {
-  if (currHand < hands.size()) {
-    return hands[currHand].getWager();
+  if (currHand != hands.end()) {
+    return currHand->getWager();
   }
 
   return 0;
 }
 
-const Hand* Player::getCurrentHand() {
-  if (currHand < hands.size()) {
-    return &hands[currHand];
+std::optional<ConstHandIter> Player::getCurrentHand() {
+  if (!hands.empty()) {
+    return currHand;
   }
 
-  return nullptr;
+  return std::nullopt;
 }
 
 void Player::endCurrentHand() {
@@ -51,10 +52,22 @@ void Player::endCurrentHand() {
   }
 }
 
-void Player::splitCurrentHand() { hands.push_back(hands[currHand].split()); }
+void Player::splitCurrentHand() { hands.push_back(currHand->split()); }
 
-void Player::doubleCurrentHand() { hands[currHand].doubleDown(); }
+void Player::doubleCurrentHand() { return currHand->doubleDown(); }
 
-ConstHandIter Player::getBeginHand() { return hands.cbegin(); }
+std::optional<ConstHandIter> Player::getBeginHand() {
+  if (!hands.empty()) {
+    return hands.cbegin();
+  }
 
-ConstHandIter Player::getEndHand() { return hands.cend(); }
+  return std::nullopt;
+}
+
+std::optional<ConstHandIter> Player::getEndHand() {
+  if (!hands.empty()) {
+    return hands.cend();
+  }
+
+  return std::nullopt;
+}

@@ -3,6 +3,7 @@
 #include "card.h"
 #include "player.h"
 #include "player_action.h"
+#include "stats_view.h"
 #include "table_view.h"
 #include "wager_view.h"
 #include <memory>
@@ -11,15 +12,18 @@
 class TuiPlayer : public Player {
 public:
   TuiPlayer(double bankroll, std::weak_ptr<TableView> tableView,
-            std::weak_ptr<WagerView> wagerView, chtype hitKey, chtype stayKey,
-            chtype doubleKey, chtype splitKey)
+            std::weak_ptr<WagerView> wagerView,
+            std::optional<std::weak_ptr<StatsView>> statsView, chtype hitKey,
+            chtype stayKey, chtype doubleKey, chtype splitKey)
       : Player(bankroll), tableView(tableView), wagerView(wagerView),
-        hitKey(hitKey), stayKey(stayKey), doubleKey(doubleKey),
-        splitKey(splitKey) {}
+        statsView(statsView), hitKey(hitKey), stayKey(stayKey),
+        doubleKey(doubleKey), splitKey(splitKey) {}
 
-  TuiPlayer(double bankroll, std::shared_ptr<TableView> tableView,
-            std::shared_ptr<WagerView> wagerView)
-      : TuiPlayer(bankroll, tableView, wagerView, 'j', 'k', 'l', ';') {}
+  TuiPlayer(double bankroll, std::weak_ptr<TableView> tableView,
+            std::weak_ptr<WagerView> wagerView,
+            std::optional<std::weak_ptr<StatsView>> statsView)
+      : TuiPlayer(bankroll, tableView, wagerView, statsView, 'j', 'k', 'l',
+                  ';') {}
 
   virtual ~TuiPlayer() = default;
 
@@ -31,9 +35,12 @@ public:
   virtual void splitCurrentHand() override;
   virtual void endCurrentHand() override;
 
+  void attachStatsView(std::weak_ptr<StatsView> statsView);
+
 private:
   std::weak_ptr<TableView> tableView;
   std::weak_ptr<WagerView> wagerView;
+  std::optional<std::weak_ptr<StatsView>> statsView;
 
   int hitKey;
   int stayKey;

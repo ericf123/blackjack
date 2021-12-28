@@ -57,13 +57,13 @@ PlayerAction CliPlayer::sanitizeAction(PlayerAction action) {
 
     return action;
   case PlayerAction::DoubleDown:
-    if (!hands[currHand].canDouble()) {
+    if (!currHand->canDouble()) {
       return PlayerAction::InvalidInput;
     }
 
     return PlayerAction::DoubleDown;
   case PlayerAction::Split:
-    if (!hands[currHand].canSplit()) {
+    if (!currHand->canSplit()) {
       return PlayerAction::InvalidInput;
     }
 
@@ -77,13 +77,15 @@ void CliPlayer::displayHands() {
   std::cout << "--------------------" << std::endl;
   std::cout << "Bankroll: $" << std::put_money(bankroll) << std::endl;
   std::cout << "-----Your Hands-----" << std::endl;
-  for (auto i = 0U; i < hands.size(); i++) {
-    if (i == currHand) {
+  for (auto handIter = hands.cbegin(), end = hands.cend(); handIter != end;
+       handIter = std::next(handIter)) {
+    if (handIter == currHand) {
       std::cout << "* ";
     }
 
-    std::cout << "($" << std::put_money(hands[i].getWager()) << ") ";
-    std::cout << hands[i] << std::endl;
+    const auto& hand = *handIter;
+    std::cout << "($" << std::put_money(hand.getWager()) << ") ";
+    std::cout << hand << std::endl;
   }
   std::cout << "--------------------" << std::endl;
   std::cout << "Dealer Up: " << dealerUpCard.value() << std::endl;

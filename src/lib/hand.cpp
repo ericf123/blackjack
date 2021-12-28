@@ -4,25 +4,26 @@
 #include <vector>
 
 void Hand::reset() {
-  hasChild = false;
   isDoubledDown = false;
   value = 0;
   wager = 0;
-  depth = 0;
 
   cards.erase(cards.begin(), cards.end());
 }
+
 void Hand::addCard(const Card& card) {
   cards.push_back(card);
   value = sumCards(cards.cbegin(), cards.cend());
 }
 
 Hand Hand::split() {
-  hasChild = true;
+  isHandSplit = true;
+
   cards.pop_back();
   value = sumCards(cards.cbegin(), cards.cend());
 
-  Hand newHand{ wager, depth + 1 };
+  Hand newHand{ wager };
+  newHand.isHandSplit = true;
   newHand.addCard(cards.front());
 
   return newHand;
@@ -41,8 +42,6 @@ Wager Hand::getWager() const { return wager; }
 
 Wager Hand::getValue() const { return value; }
 
-int Hand::getDepth() const { return depth; }
-
 bool Hand::canDouble() const { return !isDoubled() && cards.size() == 2; }
 
 bool Hand::canSplit() const {
@@ -53,7 +52,7 @@ bool Hand::canSplit() const {
   return cards.size() == 2 && clippedFirstRank == clippedSecondRank;
 }
 
-bool Hand::isSplit() const { return hasChild || depth > 0; }
+bool Hand::isSplit() const { return isHandSplit; }
 
 bool Hand::isDoubled() const { return isDoubledDown; }
 

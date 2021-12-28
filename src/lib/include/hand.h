@@ -11,13 +11,11 @@ using Wager = uint32_t;
 
 class Hand {
 public:
-  static const CardTotal MAX_VALUE = 21;
+  static constexpr CardTotal MAX_VALUE = 21;
 
   Hand() : Hand(0) {}
-  Hand(Wager wager) : Hand(wager, 0) {}
-  Hand(Wager wager, int depth)
-      : depth(depth), hasChild(false), isDoubledDown(false), wager(wager),
-        value(0U) {}
+  Hand(Wager wager)
+      : isDoubledDown(false), isHandSplit(false), wager(wager), value(0U) {}
 
   void reset();
   void addCard(const Card& card);
@@ -29,7 +27,6 @@ public:
 
   Wager getWager() const;
   CardTotal getValue() const;
-  int getDepth() const;
 
   bool canSplit() const;
   bool canDouble() const;
@@ -40,9 +37,8 @@ public:
   bool isBusted() const;
 
 private:
-  int depth;
-  bool hasChild;
   bool isDoubledDown;
+  bool isHandSplit;
   Wager wager;
   CardTotal value;
   std::vector<Card> cards;

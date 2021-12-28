@@ -2,11 +2,12 @@
 
 #include "hand.h"
 #include "player_action.h"
+#include <list>
 #include <optional>
-#include <vector>
 
 using Bankroll = double;
-using ConstHandIter = std::vector<Hand>::const_iterator;
+using ConstHandIter = std::list<Hand>::const_iterator;
+using HandIter = std::list<Hand>::iterator;
 
 class Player {
 public:
@@ -29,17 +30,17 @@ public:
 
   Bankroll getBankroll();
 
-  ConstHandIter getBeginHand();
-  ConstHandIter getEndHand();
+  std::optional<ConstHandIter> getBeginHand();
+  std::optional<ConstHandIter> getEndHand();
 
   bool playingLastHand();
   CardTotal getCurrentHandValue();
   Wager getCurrentHandWager();
-  const Hand* getCurrentHand();
+  std::optional<ConstHandIter> getCurrentHand();
 
 protected:
   Bankroll bankroll;
-  size_t currHand;
+  HandIter currHand;
   std::optional<Card> dealerUpCard;
-  std::vector<Hand> hands;
+  std::list<Hand> hands;
 };

@@ -1,8 +1,9 @@
 #include "hand_view.h"
+#include "player.h"
 #include <memory>
 #include <string>
 
-HandView::HandView(const Hand* hand, int starty, int startx)
+HandView::HandView(std::optional<ConstHandIter> hand, int starty, int startx)
     : View(bjdim::HAND_HEIGHT, bjdim::HAND_WIDTH, starty, startx), hand(hand),
       hideFirstCard(false) {
   // border
@@ -30,8 +31,8 @@ HandView::HandView(const Hand* hand, int starty, int startx)
 
 void HandView::renderHand() {
   auto i = 0U;
-  if (hand != nullptr) {
-    const auto& handToRender = *hand;
+  if (hand) {
+    const auto& handToRender = *hand.value();
 
     for (auto cardIter = handToRender.getBeginIter();
          cardIter != handToRender.getEndIter(); ++cardIter) {
@@ -58,17 +59,25 @@ void HandView::renderHand() {
     // TODO: move to TableView?
     if (handToRender.isSplit()) {
       wattron(window.get(), A_BLINK);
-      mvwprintw(window.get(), height - 2, width - 4, "(%d)",
-                handToRender.getDepth() + 1);
+      const auto currIndex = std::distance(beginHand.value(), hand.value()) + 1;
+      const auto totalHands = std::distance(beginHand.value(), endHand.value());
+      mvwprintw(window.get(), height - 2, width - 6, "(%ld/%ld)", currIndex,
+                totalHands);
       wattroff(window.get(), A_BLINK);
     } else {
-      mvwprintw(window.get(), height - 2, width - 4, "   ");
+      mvwprintw(window.get(), height - 2, width - 6, "     ");
     }
     wattroff(window.get(), A_BOLD);
   }
 }
 
-void HandView::setHand(const Hand* newHand) { hand = newHand; }
+void HandView::setHandRange(std::optional<ConstHandIter> beginHand,
+                            std::optional<ConstHandIter> hand,
+                            std::optional<ConstHandIter> endHand) {
+  this->beginHand = beginHand;
+  this->hand = hand;
+  this->endHand = endHand;
+}
 
 void HandView::update() { renderHand(); }
 

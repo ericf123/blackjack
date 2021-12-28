@@ -11,6 +11,7 @@
 #include "tui_player.h"
 #include "wager_view.h"
 #include <locale.h>
+#include <memory>
 #include <ncurses.h>
 #include <panel.h>
 
@@ -60,10 +61,13 @@ int main(int argc, char** argv) {
   const auto wagerView =
       std::make_shared<WagerView>(wagerViewStarty, wagerViewStartx);
 
-  const auto player = std::make_shared<TuiPlayer>(1000, tableView, wagerView);
+  const auto player =
+      std::make_shared<TuiPlayer>(1000, tableView, wagerView, std::nullopt);
   dealer->addPlayerToTable(player);
 
-  StatsView statsView{ player, 1, 1 };
+  const auto statsView = std::make_shared<StatsView>(player, 1, 1);
+
+  player->attachStatsView(statsView);
 
   drawViewsToScreen();
 
@@ -72,6 +76,7 @@ int main(int argc, char** argv) {
     dealer->dealInitialCards();
 
     tableView->setDealerUpCardVisible(false);
+    statsView->update();
     tableView->update();
     drawViewsToScreen();
 
@@ -86,7 +91,7 @@ int main(int argc, char** argv) {
 
     tableView->setDealerUpCardVisible(true);
     tableView->update();
-    statsView.update();
+    statsView->update();
     drawViewsToScreen();
 
     // wait for input so player can see round results

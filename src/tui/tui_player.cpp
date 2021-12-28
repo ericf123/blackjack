@@ -1,13 +1,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "hand.h"
 #include "tui_player.h"
 #include "view.h"
 
 void TuiPlayer::observeCard(const Card& card) { (void)card; }
 
 void TuiPlayer::receiveCard(const Card& card) {
-  hands[currHand].addCard(card);
+  currHand->addCard(card);
   updateViews();
   drawViewsToScreen();
 }
@@ -31,13 +32,13 @@ PlayerAction TuiPlayer::sanitizeAction(PlayerAction action) {
 
     return action;
   case PlayerAction::DoubleDown:
-    if (!hands[currHand].canDouble()) {
+    if (!currHand->canDouble()) {
       return PlayerAction::InvalidInput;
     }
 
     return PlayerAction::DoubleDown;
   case PlayerAction::Split:
-    if (!hands[currHand].canSplit()) {
+    if (!currHand->canSplit()) {
       return PlayerAction::InvalidInput;
     }
 
@@ -68,17 +69,15 @@ PlayerAction TuiPlayer::getDesiredAction() {
 }
 
 void TuiPlayer::splitCurrentHand() {
-  hands.push_back(hands[currHand].split());
+  hands.push_back(currHand->split());
   updateViews();
   drawViewsToScreen();
 }
 
 void TuiPlayer::endCurrentHand() {
-  const auto justDoubled =
-      currHand < hands.size() && hands[currHand].isDoubled();
-  const auto finishedIntermediateSplitHand = currHand < hands.size() &&
-                                             !playingLastHand() &&
-                                             hands[currHand].isSplit();
+  const auto justDoubled = currHand->isDoubled();
+  const auto finishedIntermediateSplitHand =
+      !playingLastHand() && currHand->isSplit();
   if (justDoubled || finishedIntermediateSplitHand) {
     getch();
   }
@@ -103,8 +102,18 @@ Wager TuiPlayer::getWager() {
   return wager;
 }
 
+void TuiPlayer::attachStatsView(std::weak_ptr<StatsView> viewPtr) {
+  statsView = viewPtr;
+}
+
 void TuiPlayer::updateViews() {
   if (!tableView.expired()) {
     tableView.lock()->update();
   }
+
+  if (statsView && !statsView.value().expired()) {
+    statsView.value().lock()->update();
+  }
+
+  // no need to update wager view as it's usually hidden
 }

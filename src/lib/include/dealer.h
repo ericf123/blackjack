@@ -7,15 +7,13 @@ using namespace bjcard;
 
 class Dealer {
 public:
-  Dealer(std::shared_ptr<Table> table)
-      : firstRound(true), table(std::move(table)) {}
+  Dealer(std::shared_ptr<Table> table);
   void addPlayerToTable(std::shared_ptr<Player> player);
 
-  const Hand& getDealerHand();
+  std::optional<ConstHandIter> getDealerHand();
 
   void resetRound();
   void playRound();
-  void getWagers();
   void dealInitialCards();
   bool checkDealerBlackjack();
   void runPlayerActions();
@@ -24,8 +22,8 @@ public:
 
 private:
   const CardTotal DEALER_STAY_VALUE = 17;
-  bool firstRound;
-  Hand dealerHand;
+  HandIter dealerHand;
+  std::list<Hand> dealerHands;
   std::shared_ptr<Table> table;
 
   void publishUpCard(const Card& card);
