@@ -20,7 +20,7 @@ public:
   PlayerPtrIter getEndPlayer();
 
   void addPlayer(std::shared_ptr<Player> player);
-  void showCardToPlayers(Card card);
+  void showCardToPlayers(const Card& card);
   Card drawCard();
   Card drawCard(bool observable);
   void shuffleIfNeeded();

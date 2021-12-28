@@ -23,11 +23,11 @@ public:
 
   virtual ~TuiPlayer() = default;
 
-  virtual void observeCard(Card card) override;
+  virtual void observeCard(const Card& card) override;
   virtual PlayerAction getNextAction() override;
   virtual Wager getWager() override;
 
-  virtual void receiveCard(Card card) override;
+  virtual void receiveCard(const Card& card) override;
   virtual void splitCurrentHand() override;
   virtual void endCurrentHand() override;
 

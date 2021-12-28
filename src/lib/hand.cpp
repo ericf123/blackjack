@@ -12,7 +12,7 @@ void Hand::reset() {
 
   cards.erase(cards.begin(), cards.end());
 }
-void Hand::addCard(Card card) {
+void Hand::addCard(const Card& card) {
   cards.push_back(card);
   value = sumCards(cards.cbegin(), cards.cend());
 }

@@ -55,7 +55,7 @@ void Dealer::dealInitialCards() {
   publishUpCard(upCard);
 }
 
-void Dealer::publishUpCard(Card card) {
+void Dealer::publishUpCard(const Card& card) {
   for (auto playerIter = table->getBeginPlayer();
        playerIter != table->getEndPlayer(); ++playerIter) {
     auto& player = **playerIter;

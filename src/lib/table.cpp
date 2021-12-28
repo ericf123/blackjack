@@ -15,7 +15,7 @@ PlayerPtrIter Table::getBeginPlayer() { return players.begin(); }
 
 PlayerPtrIter Table::getEndPlayer() { return players.end(); }
 
-void Table::showCardToPlayers(Card card) {
+void Table::showCardToPlayers(const Card& card) {
   for (auto& player : players) {
     player->observeCard(card);
   }

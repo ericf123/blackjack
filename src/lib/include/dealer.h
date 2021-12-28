@@ -28,7 +28,7 @@ private:
   Hand dealerHand;
   std::shared_ptr<Table> table;
 
-  void publishUpCard(Card card);
+  void publishUpCard(const Card& card);
   bool shouldPlayDealerHand();
   bool handlePlayerAction(Player& player, PlayerAction action);
 };

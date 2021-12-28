@@ -5,7 +5,7 @@
 #include <iostream>
 #include <limits>
 
-void CliPlayer::observeCard(Card card) { (void)card; }
+void CliPlayer::observeCard(const Card& card) { (void)card; }
 
 PlayerAction CliPlayer::getNextAction() {
   displayHands();

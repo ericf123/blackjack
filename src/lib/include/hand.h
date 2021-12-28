@@ -20,7 +20,7 @@ public:
         value(0U) {}
 
   void reset();
-  void addCard(Card card);
+  void addCard(const Card& card);
   Hand split();
   void doubleDown();
 

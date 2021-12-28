@@ -12,13 +12,13 @@ class Player {
 public:
   Player(Bankroll bankroll)
       : bankroll(bankroll), currHand(0), dealerUpCard(std::nullopt) {}
-  virtual void observeCard(Card card) = 0;
+  virtual void observeCard(const Card& card) = 0;
   virtual PlayerAction getNextAction() = 0;
   virtual Wager getWager() = 0;
 
-  virtual void beginRound(Card firstCard, Wager wager);
-  virtual void receiveCard(Card card);
-  virtual void setDealerUpCard(Card card);
+  virtual void beginRound(const Card& firstCard, Wager wager);
+  virtual void receiveCard(const Card& card);
+  virtual void setDealerUpCard(const Card& card);
 
   virtual void splitCurrentHand();
   virtual void doubleCurrentHand();

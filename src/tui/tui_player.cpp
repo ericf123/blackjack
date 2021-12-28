@@ -4,9 +4,9 @@
 #include "tui_player.h"
 #include "view.h"
 
-void TuiPlayer::observeCard(Card card) { (void)card; }
+void TuiPlayer::observeCard(const Card& card) { (void)card; }
 
-void TuiPlayer::receiveCard(Card card) {
+void TuiPlayer::receiveCard(const Card& card) {
   hands[currHand].addCard(card);
   updateViews();
   drawViewsToScreen();

@@ -1,10 +1,10 @@
 #include "player.h"
 
-void Player::receiveCard(Card card) { hands[currHand].addCard(card); }
+void Player::receiveCard(const Card& card) { hands[currHand].addCard(card); }
 
-void Player::setDealerUpCard(Card card) { dealerUpCard.emplace(card); }
+void Player::setDealerUpCard(const Card& card) { dealerUpCard.emplace(card); }
 
-void Player::beginRound(Card firstCard, Wager wager) {
+void Player::beginRound(const Card& firstCard, Wager wager) {
   hands.erase(hands.begin(), hands.end());
 
   hands.push_back(Hand(wager));
