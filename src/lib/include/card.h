@@ -18,6 +18,8 @@ static const std::string SUIT_DISPLAY_STRS[] = { "\u2661", "\u2662", "\u2660",
 
 using CardTotal = uint32_t;
 
+static constexpr size_t DECK_SIZE = 52;
+
 enum class Rank {
   Ace = 1,
   Two,

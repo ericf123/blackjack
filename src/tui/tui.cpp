@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
   refresh();
 
   // create models
-  const auto table = std::make_shared<Table>(6, 1.5, true);
+  const auto table = std::make_shared<Table>(6, DECK_SIZE * 2, 1.5, true);
   const auto dealer = std::make_shared<Dealer>(table);
 
   // create main views

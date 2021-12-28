@@ -6,9 +6,9 @@
 #include <utility>
 
 #include "card.h"
-#include "deck.h"
+#include "shoe.h"
 
-Deck::Deck(size_t numDecks) {
+Shoe::Shoe(size_t numDecks, size_t minCards) : minCards(minCards) {
   const auto repeatTimes = numDecks;
   for (auto curr = 0U; curr < repeatTimes; ++curr) {
     for (auto rank = Rank::Ace; rank <= Rank::King; ++rank) {
@@ -20,11 +20,13 @@ Deck::Deck(size_t numDecks) {
   currCard = cards.cbegin();
 }
 
-size_t Deck::numCardsRemaining() {
+size_t Shoe::numCardsRemaining() {
   return std::distance(currCard, cards.cend());
 }
 
-std::optional<Card> Deck::draw() {
+bool Shoe::needsShuffle() { return numCardsRemaining() <= minCards; }
+
+std::optional<Card> Shoe::draw() {
   if (currCard == cards.cend()) {
     return std::nullopt;
   } else {
@@ -34,7 +36,7 @@ std::optional<Card> Deck::draw() {
   }
 }
 
-void Deck::shuffle() {
+void Shoe::shuffle() {
   auto seed = std::chrono::system_clock::now().time_since_epoch().count();
   std::shuffle(cards.begin(), cards.end(), std::default_random_engine(seed));
   currCard = cards.cbegin();

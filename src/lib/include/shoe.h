@@ -8,15 +8,16 @@
 
 using namespace bjcard;
 
-class Deck {
+class Shoe {
 public:
-  Deck(size_t numDecks);
+  Shoe(size_t numDecks, size_t minCards);
   size_t numCardsRemaining();
+  bool needsShuffle();
   std::optional<Card> draw();
   void shuffle();
 
 private:
-  static constexpr size_t DECK_SIZE = 52;
+  size_t minCards;
   std::vector<Card> cards;
   std::vector<Card>::const_iterator currCard;
 };

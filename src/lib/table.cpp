@@ -1,9 +1,11 @@
 #include "table.h"
 #include <optional>
 
-Table::Table(size_t numDecks, double blackjackPayoutRatio, bool dealerHitSoft17)
+Table::Table(size_t numDecks, size_t minCardsInShoe,
+             double blackjackPayoutRatio, bool dealerHitSoft17)
     : blackjackPayoutRatio(blackjackPayoutRatio),
-      dealerHitSoft17(dealerHitSoft17), firstRound(true), deck(numDecks) {}
+      dealerHitSoft17(dealerHitSoft17), firstRound(true),
+      shoe(numDecks, minCardsInShoe) {}
 
 void Table::addPlayer(std::shared_ptr<Player> player) {
   players.push_back(player);
@@ -21,7 +23,7 @@ void Table::showCardToPlayers(Card card) {
 
 Card Table::drawCard(bool observable) {
   firstRound = false;
-  auto card = deck.draw().value();
+  const auto card = shoe.draw().value();
 
   if (observable) {
     showCardToPlayers(card);
@@ -34,10 +36,9 @@ Card Table::drawCard() { return drawCard(true); }
 
 void Table::shuffleIfNeeded() {
   // TODO: shuffle with 2 decks left??
-  const auto minCards = (players.size() + 1) * EST_MAX_PLAYER_CARDS_PER_ROUND;
-  if (firstRound || deck.numCardsRemaining() < minCards) {
+  if (firstRound || shoe.needsShuffle()) {
     forceShuffle();
   }
 }
 
-void Table::forceShuffle() { deck.shuffle(); }
+void Table::forceShuffle() { shoe.shuffle(); }
