@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <optional>
+#include <random>
 #include <vector>
 
 #include "card.h"
@@ -20,4 +21,6 @@ private:
   size_t minCards;
   std::vector<Card> cards;
   std::vector<Card>::const_iterator currCard;
+  uint64_t randSeed;
+  std::ranlux48 randGenerator;
 };

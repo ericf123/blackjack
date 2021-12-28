@@ -1,11 +1,8 @@
 #include "shoe.h"
 #include "card.h"
 #include <algorithm>
-#include <array>
 #include <chrono>
-#include <optional>
 #include <random>
-#include <utility>
 
 Shoe::Shoe(size_t numDecks, size_t minCards) : minCards(minCards) {
   const auto repeatTimes = numDecks;
@@ -17,6 +14,14 @@ Shoe::Shoe(size_t numDecks, size_t minCards) : minCards(minCards) {
     }
   }
   currCard = cards.cbegin();
+
+  // use both random device and time to seed generator in case
+  // `std::random_device` is a PRNG
+  std::random_device rd;
+  const auto now =
+      std::chrono::high_resolution_clock::now().time_since_epoch().count();
+  randSeed = now ^ rd();
+  randGenerator = std::ranlux48{ randSeed };
 }
 
 size_t Shoe::numCardsRemaining() {
@@ -39,7 +44,6 @@ Card Shoe::draw() {
 }
 
 void Shoe::shuffle() {
-  auto seed = std::chrono::system_clock::now().time_since_epoch().count();
-  std::shuffle(cards.begin(), cards.end(), std::default_random_engine(seed));
+  std::shuffle(cards.begin(), cards.end(), randGenerator);
   currCard = cards.cbegin();
 }

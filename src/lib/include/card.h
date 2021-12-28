@@ -1,11 +1,8 @@
 #pragma once
 
-#include <algorithm>
 #include <cstdint>
-#include <iostream>
 #include <sstream>
 #include <type_traits>
-#include <utility>
 
 namespace bjcard {
 static const std::string RANK_DISPLAY_STRS[] = { "?",  "A", "2", "3", "4",
