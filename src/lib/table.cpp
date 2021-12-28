@@ -23,7 +23,7 @@ void Table::showCardToPlayers(const Card& card) {
 
 Card Table::drawCard(bool observable) {
   firstRound = false;
-  const auto card = shoe.draw().value();
+  const auto card = shoe.draw();
 
   if (observable) {
     showCardToPlayers(card);

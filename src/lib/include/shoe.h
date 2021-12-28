@@ -13,7 +13,7 @@ public:
   Shoe(size_t numDecks, size_t minCards);
   size_t numCardsRemaining();
   bool needsShuffle();
-  std::optional<Card> draw();
+  Card draw();
   void shuffle();
 
 private:

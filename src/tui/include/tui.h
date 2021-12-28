@@ -15,7 +15,7 @@ namespace bjdim {
 constexpr int CARD_HEIGHT = 7;
 constexpr int CARD_WIDTH = 5;
 constexpr int HAND_HEIGHT = 2 * CARD_HEIGHT + 1 + 4;
-constexpr int HAND_WIDTH = 3 * CARD_WIDTH + 2 + 2;
+constexpr int HAND_WIDTH = 4 * CARD_WIDTH + 3 + 2;
 constexpr int STATS_WIDTH = 20;
 constexpr int TITLE_HEIGHT = 1;
 constexpr int TABLE_HEIGHT = HAND_HEIGHT * 2 + 4 + 2;

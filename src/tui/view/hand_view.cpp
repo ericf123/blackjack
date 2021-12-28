@@ -19,12 +19,15 @@ HandView::HandView(std::optional<ConstHandIter> hand, int starty, int startx)
       CardView{ std::nullopt, starty + 1, startx + 1 + bjdim::CARD_WIDTH + 1 },
       CardView{ std::nullopt, starty + 1,
                 startx + 1 + bjdim::CARD_WIDTH * 2 + 2 },
+      CardView{ std::nullopt, starty + 1,
+                startx + 1 + bjdim::CARD_WIDTH * 3 + 3 },
       CardView{ std::nullopt, starty + 1 + bjdim::CARD_HEIGHT + 1, startx + 1 },
       CardView{ std::nullopt, starty + 1 + bjdim::CARD_HEIGHT + 1,
                 startx + 1 + bjdim::CARD_WIDTH + 1 },
       CardView{ std::nullopt, starty + 1 + bjdim::CARD_HEIGHT + 1,
                 startx + 1 + bjdim::CARD_WIDTH * 2 + 2 },
-  });
+      CardView{ std::nullopt, starty + 1 + bjdim::CARD_HEIGHT + 1,
+                startx + 1 + bjdim::CARD_WIDTH * 3 + 3 } });
 
   renderHand();
 }
@@ -36,7 +39,7 @@ void HandView::renderHand() {
 
     for (auto cardIter = handToRender.getBeginIter();
          cardIter != handToRender.getEndIter(); ++cardIter) {
-      // silently fail to render hands more than 6 cards in length
+      // silently fail to render hands more than MAX_CARDS cards in length
       if (i < cardViews->size()) {
         auto& currView = (*cardViews.get())[i];
 

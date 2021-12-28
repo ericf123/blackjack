@@ -10,7 +10,7 @@
 
 class HandView : public View {
 public:
-  static constexpr size_t MAX_CARDS = 6;
+  static constexpr size_t MAX_CARDS = 8;
 
   HandView(std::optional<ConstHandIter> hand, int starty, int startx);
 

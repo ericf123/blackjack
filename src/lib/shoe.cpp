@@ -1,12 +1,11 @@
+#include "shoe.h"
+#include "card.h"
 #include <algorithm>
 #include <array>
 #include <chrono>
 #include <optional>
 #include <random>
 #include <utility>
-
-#include "card.h"
-#include "shoe.h"
 
 Shoe::Shoe(size_t numDecks, size_t minCards) : minCards(minCards) {
   const auto repeatTimes = numDecks;
@@ -26,14 +25,17 @@ size_t Shoe::numCardsRemaining() {
 
 bool Shoe::needsShuffle() { return numCardsRemaining() <= minCards; }
 
-std::optional<Card> Shoe::draw() {
+Card Shoe::draw() {
+  // this is only as a worst case scenario
+  // in general, the shoe should only be reshuffled between hands, using
+  // `needsShuffle` to determine if a shuffle is required
   if (currCard == cards.cend()) {
-    return std::nullopt;
-  } else {
-    const auto card = *currCard;
-    ++currCard;
-    return { card };
+    shuffle();
   }
+
+  const auto card = *currCard;
+  ++currCard;
+  return { card };
 }
 
 void Shoe::shuffle() {
