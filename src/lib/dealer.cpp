@@ -184,7 +184,8 @@ void Dealer::handleRoundResults() {
         const auto playerBusted = hand->isBusted();
         const auto dealerBusted = dealerHand->isBusted();
 
-        if (hand->isBlackjack() && !dealerHand->isBlackjack()) {
+        if (hand->isBlackjack() && !hand->isSplit() &&
+            !dealerHand->isBlackjack()) {
           // pay blackjack payout + original wager
           const auto blackjackPayout =
               (1.0 + table->getBlackjackPayoutRatio()) * handWager;

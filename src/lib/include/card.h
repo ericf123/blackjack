@@ -40,7 +40,7 @@ struct Card {
   Suit suit;
 };
 
-// implement pre-increment for Rank, Suit only
+// implement pre-increment for enum types (useful for iterating over Rank/Suit)
 template <typename T>
 typename std::enable_if_t<std::is_enum_v<T>, T> operator++(T& t) {
   t = static_cast<T>(static_cast<size_t>(t) + 1);
