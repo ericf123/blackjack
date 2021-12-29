@@ -14,9 +14,9 @@ public:
   TuiPlayer(double bankroll, std::weak_ptr<TableView> tableView,
             std::weak_ptr<WagerView> wagerView,
             std::optional<std::weak_ptr<StatsView>> statsView, chtype hitKey,
-            chtype stayKey, chtype doubleKey, chtype splitKey)
+            chtype standKey, chtype doubleKey, chtype splitKey)
       : Player(bankroll), tableView(tableView), wagerView(wagerView),
-        statsView(statsView), hitKey(hitKey), stayKey(stayKey),
+        statsView(statsView), hitKey(hitKey), standKey(standKey),
         doubleKey(doubleKey), splitKey(splitKey) {}
 
   TuiPlayer(double bankroll, std::weak_ptr<TableView> tableView,
@@ -43,7 +43,7 @@ private:
   std::optional<std::weak_ptr<StatsView>> statsView;
 
   int hitKey;
-  int stayKey;
+  int standKey;
   int doubleKey;
   int splitKey;
 

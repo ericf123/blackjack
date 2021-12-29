@@ -25,7 +25,7 @@ PlayerAction TuiPlayer::getNextAction() {
 
 PlayerAction TuiPlayer::sanitizeAction(PlayerAction action) {
   switch (action) {
-  case PlayerAction::Stay:
+  case PlayerAction::Stand:
     if (playingLastHand()) {
       return PlayerAction::EndTurn;
     }
@@ -54,8 +54,8 @@ PlayerAction TuiPlayer::getDesiredAction() {
     auto userInputChar = getch();
     if (userInputChar == hitKey) {
       action = PlayerAction::Hit;
-    } else if (userInputChar == stayKey) {
-      action = PlayerAction::Stay;
+    } else if (userInputChar == standKey) {
+      action = PlayerAction::Stand;
     } else if (userInputChar == doubleKey) {
       action = PlayerAction::DoubleDown;
     } else if (userInputChar == splitKey) {

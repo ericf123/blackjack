@@ -20,7 +20,7 @@ TableView::TableView(std::shared_ptr<Table> table,
   if (table->shouldDealerHitSoft17()) {
     printHCenter(bjdim::HAND_HEIGHT + 2, "Dealer Must Hit Soft 17s");
   } else {
-    printHCenter(bjdim::HAND_HEIGHT + 2, "Dealer Stays on All 17s");
+    printHCenter(bjdim::HAND_HEIGHT + 2, "Dealer Stands on All 17s");
   }
   wattroff(window.get(), A_BOLD);
 

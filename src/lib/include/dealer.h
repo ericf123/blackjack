@@ -21,7 +21,7 @@ public:
   void handleRoundResults();
 
 private:
-  const CardTotal DEALER_STAY_VALUE = 17;
+  const CardTotal DEALER_STAND_VALUE = 17;
   HandIter dealerHand;
   std::list<Hand> dealerHands;
   std::shared_ptr<Table> table;

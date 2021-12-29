@@ -31,7 +31,7 @@ PlayerAction CliPlayer::getDesiredAction() {
       action = PlayerAction::Hit;
       break;
     case 'S':
-      action = PlayerAction::Stay;
+      action = PlayerAction::Stand;
       break;
     case 'D':
       action = PlayerAction::DoubleDown;
@@ -50,7 +50,7 @@ PlayerAction CliPlayer::getDesiredAction() {
 
 PlayerAction CliPlayer::sanitizeAction(PlayerAction action) {
   switch (action) {
-  case PlayerAction::Stay:
+  case PlayerAction::Stand:
     if (playingLastHand()) {
       return PlayerAction::EndTurn;
     }

@@ -107,7 +107,7 @@ bool Dealer::handlePlayerAction(Player& player, PlayerAction action) {
     if (player.playingLastHand()) {
       action = PlayerAction::EndTurn;
     } else {
-      action = PlayerAction::Stay;
+      action = PlayerAction::Stand;
     }
   }
 
@@ -120,11 +120,11 @@ bool Dealer::handlePlayerAction(Player& player, PlayerAction action) {
     if (player.playingLastHand()) {
       action = PlayerAction::EndTurn;
     } else {
-      action = PlayerAction::Stay;
+      action = PlayerAction::Stand;
     }
   }
 
-  if (action == PlayerAction::Stay || action == PlayerAction::EndTurn) {
+  if (action == PlayerAction::Stand || action == PlayerAction::EndTurn) {
     player.endCurrentHand();
   }
 
@@ -157,12 +157,12 @@ void Dealer::playDealerHand() {
   table->showCardToPlayers(dealerDownCard);
 
   if (shouldPlayDealerHand()) {
-    while (dealerHand->getValue() <= DEALER_STAY_VALUE) {
-      if (dealerHand->getValue() < DEALER_STAY_VALUE) {
+    while (dealerHand->getValue() <= DEALER_STAND_VALUE) {
+      if (dealerHand->getValue() < DEALER_STAND_VALUE) {
         dealerHand->addCard(table->drawCard());
       } else if (table->shouldDealerHitSoft17() && dealerHand->isSoft()) {
         dealerHand->addCard(table->drawCard());
-      } else { // dealer has soft 17 and stays
+      } else { // dealer has soft 17 and stands
         break;
       }
     }
