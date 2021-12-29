@@ -10,7 +10,7 @@ static const std::string RANK_DISPLAY_STRS[] = { "?",  "A", "2", "3", "4",
                                                  "10", "J", "Q", "K" };
 
 // hearts, diamonds, spades, clubs
-static const std::string SUIT_DISPLAY_STRS[] = { "\u2661", "\u2662", "\u2660",
+static const std::string SUIT_DISPLAY_STRS[] = { "\u2665", "\u2666", "\u2660",
                                                  "\u2663" };
 
 using CardTotal = uint32_t;

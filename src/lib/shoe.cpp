@@ -40,7 +40,7 @@ Card Shoe::draw() {
 
   const auto card = *currCard;
   ++currCard;
-  return { card };
+  return card;
 }
 
 void Shoe::shuffle() {
