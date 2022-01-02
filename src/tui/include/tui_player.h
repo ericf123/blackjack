@@ -1,6 +1,7 @@
 #pragma once
 
 #include "card.h"
+#include "hi_lo.h"
 #include "player.h"
 #include "player_action.h"
 #include "stats_view.h"
@@ -17,7 +18,7 @@ public:
             chtype standKey, chtype doubleKey, chtype splitKey)
       : Player(bankroll), tableView(tableView), wagerView(wagerView),
         statsView(statsView), hitKey(hitKey), standKey(standKey),
-        doubleKey(doubleKey), splitKey(splitKey) {}
+        doubleKey(doubleKey), splitKey(splitKey), hiLo(0) {}
 
   TuiPlayer(double bankroll, std::weak_ptr<TableView> tableView,
             std::weak_ptr<WagerView> wagerView,
@@ -27,6 +28,7 @@ public:
 
   virtual ~TuiPlayer() = default;
 
+  virtual void notifyShuffle() override;
   virtual void observeCard(const Card& card) override;
   virtual PlayerAction getNextAction() override;
   virtual Wager getWager() override;
@@ -36,6 +38,7 @@ public:
   virtual void endCurrentHand() override;
 
   void attachStatsView(std::weak_ptr<StatsView> statsView);
+  void setCardsPerShoe(std::size_t cardsPerShoe);
 
 private:
   std::weak_ptr<TableView> tableView;
@@ -47,7 +50,10 @@ private:
   int doubleKey;
   int splitKey;
 
+  HiLo hiLo;
+
   PlayerAction getDesiredAction();
   PlayerAction sanitizeAction(PlayerAction action);
   void updateViews();
+  void updateStatsViewCount();
 };

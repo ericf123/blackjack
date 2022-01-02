@@ -43,7 +43,9 @@ int main(int argc, char** argv) {
   refresh();
 
   // create models
-  const auto table = std::make_shared<Table>(6, DECK_SIZE * 2, 1.5, true);
+  const auto DECKS_PER_SHOE = 6U;
+  const auto table =
+      std::make_shared<Table>(DECKS_PER_SHOE, DECK_SIZE * 2, 1.5, true);
   const auto dealer = std::make_shared<Dealer>(table);
 
   // create main views
@@ -68,6 +70,7 @@ int main(int argc, char** argv) {
   const auto statsView = std::make_shared<StatsView>(player, 1, 1);
 
   player->attachStatsView(statsView);
+  player->setCardsPerShoe(DECKS_PER_SHOE * DECK_SIZE);
 
   drawViewsToScreen();
 

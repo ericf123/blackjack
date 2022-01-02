@@ -5,7 +5,23 @@
 #include "tui_player.h"
 #include "view.h"
 
-void TuiPlayer::observeCard(const Card& card) { (void)card; }
+void TuiPlayer::setCardsPerShoe(std::size_t cardsPerShoe) {
+  hiLo.setCardsPerShoe(cardsPerShoe);
+}
+
+void TuiPlayer::notifyShuffle() {
+  hiLo.reset();
+  updateStatsViewCount();
+  updateViews();
+  drawViewsToScreen();
+}
+
+void TuiPlayer::observeCard(const Card& card) {
+  hiLo.addCard(card);
+  updateStatsViewCount();
+  updateViews();
+  drawViewsToScreen();
+}
 
 void TuiPlayer::receiveCard(const Card& card) {
   currHand->addCard(card);
@@ -116,4 +132,13 @@ void TuiPlayer::updateViews() {
   }
 
   // no need to update wager view as it's usually hidden
+}
+
+void TuiPlayer::updateStatsViewCount() {
+  if (statsView && !statsView->expired()) {
+    const auto sv = statsView.value().lock();
+    sv->setRawCount(hiLo.getRawCount());
+    sv->setTrueCount(hiLo.getTrueCount());
+    sv->setDecksRemaining(hiLo.getDecksRemaining());
+  }
 }

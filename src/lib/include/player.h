@@ -13,6 +13,7 @@ class Player {
 public:
   Player(Bankroll bankroll)
       : bankroll(bankroll), currHand(0), dealerUpCard(std::nullopt) {}
+  virtual void notifyShuffle() = 0;
   virtual void observeCard(const Card& card) = 0;
   virtual PlayerAction getNextAction() = 0;
   virtual Wager getWager() = 0;

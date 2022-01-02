@@ -5,6 +5,8 @@
 #include <iostream>
 #include <limits>
 
+void CliPlayer::notifyShuffle() {}
+
 void CliPlayer::observeCard(const Card& card) { (void)card; }
 
 PlayerAction CliPlayer::getNextAction() {

@@ -1,7 +1,8 @@
 #include "stats_view.h"
 
 StatsView::StatsView(std::shared_ptr<Player> player, int starty, int startx)
-    : View(LINES - 2, bjdim::STATS_WIDTH, starty, startx), player(player) {
+    : View(LINES - 2, bjdim::STATS_WIDTH, starty, startx), player(player),
+      rawCount(0), trueCount(0), decksRemaining(0) {
   wbkgd(window.get(), COLOR_PAIR(bjcolor::PAIR_BKGD));
   box(window.get(), 0, 0);
   draw();
@@ -10,6 +11,20 @@ StatsView::StatsView(std::shared_ptr<Player> player, int starty, int startx)
 void StatsView::draw() {
   mvwprintw(window.get(), 1, 1, "Bankroll: $       "); // TODO: fix this
   mvwprintw(window.get(), 1, 1, "Bankroll: $%0.0f", player->getBankroll());
+  mvwprintw(window.get(), 2, 1, "Raw Count:     "); // TODO: fix this (4 spaces)
+  mvwprintw(window.get(), 2, 1, "Raw Count: %+d", rawCount);
+  mvwprintw(window.get(), 3, 1,
+            "True Count:     "); // TODO: fix this (4 spaces)
+  mvwprintw(window.get(), 3, 1, "True Count: %+d", trueCount);
+  mvwprintw(window.get(), 4, 1,
+            "Decks Remaining:     "); // TODO: fix this (4 spaces)
+  mvwprintw(window.get(), 4, 1, "Decks Remaining: %0.1f", decksRemaining);
 }
 
 void StatsView::update() { draw(); }
+
+void StatsView::setRawCount(int rawCount) { this->rawCount = rawCount; }
+void StatsView::setTrueCount(int trueCount) { this->trueCount = trueCount; }
+void StatsView::setDecksRemaining(double decksRemaining) {
+  this->decksRemaining = decksRemaining;
+}

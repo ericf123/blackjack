@@ -1,4 +1,5 @@
 #include "table.h"
+#include <algorithm>
 #include <optional>
 
 Table::Table(size_t numDecks, size_t minCardsInShoe,
@@ -38,6 +39,8 @@ void Table::shuffleIfNeeded() {
   // TODO: shuffle with 2 decks left??
   if (firstRound || shoe.needsShuffle()) {
     forceShuffle();
+    const auto notify = [](std::shared_ptr<Player> p) { p->notifyShuffle(); };
+    std::for_each(players.begin(), players.end(), notify);
   }
 }
 
