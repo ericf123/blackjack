@@ -12,6 +12,4 @@ private:
   int doubleKey;
   int splitKey;
   OwningHandle sourceNode;
-
-  PlayerAction getDesiredAction();
 };

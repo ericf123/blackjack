@@ -10,20 +10,11 @@ TuiPlayer::TuiPlayer(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
                      Bankroll bankroll)
     : Player(router, sourceNode, bankroll) {
   if (auto r = router.lock()) {
-    EventHandler<PlayerActionReq> actionReqHandler =
-        [this](const WrappedEvent<PlayerActionReq>& e) {
+    EventHandler<TuiPlayerActionCmd> actionCmdHandler =
+        [this](const WrappedEvent<TuiPlayerActionCmd>& e) {
           (void)e;
-          const auto actions = e.router.broadcastInvoke<PlayerAction>(
-              this->sourceNode, InputPlayerActionInv{});
-          auto actionToSend = PlayerAction::InvalidInput;
-          if (!actions.empty()) {
-            // there should only be one input node on a TUI
-            actionToSend = sanitizeAction(actions.front());
-          }
-
-          // TODO: use specific dealer node instead of broadcast?
-          e.router.broadcast(this->sourceNode,
-                             PlayerActionResp{ actionToSend, *this });
+          const auto actionToSend = sanitizeAction(e.event.action);
+          e.router.broadcast(this->sourceNode, PlayerActionCmd{ actionToSend });
         };
 
     InvokeHandler<Wager, PlayerGetWagerInv> wagerInvHandler =
@@ -40,8 +31,20 @@ TuiPlayer::TuiPlayer(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
       }
     };
 
-    r->registerInvokeHandler(sourceNode, actionReqHandler);
+    EventHandler<PlayerEndHandCmd> endHandHandler =
+        [this](const WrappedEvent<PlayerEndHandCmd>& e) {
+          (void)e;
+          if (!playingLastHand()) {
+            if (currHand->isDoubled() || currHand->isSplit()) {
+              e.router.broadcast(this->sourceNode, InputBlockUntilKeyPressed{});
+            }
+            currHand = std::next(currHand);
+          }
+        };
+
     r->registerInvokeHandler(sourceNode, wagerInvHandler);
+    r->listen(sourceNode, false, actionCmdHandler);
+    r->listen(sourceNode, false, endHandHandler);
   }
 }
 
@@ -69,25 +72,3 @@ PlayerAction TuiPlayer::sanitizeAction(PlayerAction action) {
     return action;
   }
 }
-
-// void TuiPlayer::splitCurrentHand() {
-//   hands.push_back(currHand->split());
-//   updateViews();
-//   drawViewsToScreen();
-// }
-
-// void TuiPlayer::endCurrentHand() {
-//   const auto justDoubled = currHand->isDoubled();
-//   const auto finishedIntermediateSplitHand =
-//       !playingLastHand() && currHand->isSplit();
-//   if (justDoubled || finishedIntermediateSplitHand) {
-//     getch();
-//   }
-
-//   if (!playingLastHand()) {
-//     ++currHand;
-//   }
-
-//   updateViews();
-//   drawViewsToScreen();
-// }

@@ -9,31 +9,31 @@ InputNode::InputNode(int hitKey, int standKey, int doubleKey, int splitKey,
       splitKey(splitKey), sourceNode(sourceNode) {
   if (!router.expired()) {
     auto r = router.lock();
-    InvokeHandler<PlayerAction, InputPlayerActionInv> playerActionInvHandler =
-        [this, r](const WrappedEvent<InputPlayerActionInv>& e) -> PlayerAction {
-      (void)e;
-      return getDesiredAction();
-    };
-    r->registerInvokeHandler(sourceNode, playerActionInvHandler);
-  }
-}
+    EventHandler<InputGetAndMapKeyPress> getAndMapKeyHandler =
+        [this](const WrappedEvent<InputGetAndMapKeyPress>& e) {
+          const auto userInputChar = getch();
+          if (userInputChar == this->hitKey) {
+            e.router.broadcast(this->sourceNode,
+                               TuiPlayerActionCmd{ PlayerAction::Hit });
+          } else if (userInputChar == this->standKey) {
+            e.router.broadcast(this->sourceNode,
+                               TuiPlayerActionCmd{ PlayerAction::Stand });
+          } else if (userInputChar == this->doubleKey) {
+            e.router.broadcast(this->sourceNode,
+                               TuiPlayerActionCmd{ PlayerAction::DoubleDown });
+          } else if (userInputChar == this->splitKey) {
+            e.router.broadcast(this->sourceNode,
+                               TuiPlayerActionCmd{ PlayerAction::Split });
+          }
+        };
 
-PlayerAction InputNode::getDesiredAction() {
-  auto action = PlayerAction::InvalidInput;
-  while (action == PlayerAction::InvalidInput) {
-    auto userInputChar = getch();
-    if (userInputChar == hitKey) {
-      action = PlayerAction::Hit;
-    } else if (userInputChar == standKey) {
-      action = PlayerAction::Stand;
-    } else if (userInputChar == doubleKey) {
-      action = PlayerAction::DoubleDown;
-    } else if (userInputChar == splitKey) {
-      action = PlayerAction::Split;
-    } else {
-      action = PlayerAction::InvalidInput;
-    }
-  }
+    EventHandler<InputBlockUntilKeyPressed> blockForKeyPressHandler =
+        [](const WrappedEvent<InputBlockUntilKeyPressed>& e) {
+          (void)e;
+          getch();
+        };
 
-  return action;
+    r->listen(sourceNode, false, getAndMapKeyHandler);
+    r->listen(sourceNode, false, blockForKeyPressHandler);
+  }
 }

@@ -26,62 +26,68 @@ Dealer::Dealer(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
           beginPlayer = e.event.player;
         };
 
-    EventHandler<PlayerActionResp> playerActionHandler =
-        [this](const WrappedEvent<PlayerActionResp>& e) {
-          if (currPlayer != endPlayer) {
-            const auto& player = e.event.player;
-            auto action = e.event.action;
+    EventHandler<PlayerActionCmd> playerActionHandler =
+        [this](const WrappedEvent<PlayerActionCmd>& e) {
+          if (currPlayer != endPlayer && e.sourceId == *currPlayer) {
+            const auto playerOpt =
+                e.router.invoke<std::reference_wrapper<const Player>>(
+                    this->sourceNode, e.sourceId, ToConstRefInv<Player>{});
+            if (playerOpt) {
+              const auto& player = playerOpt.value().get();
+              auto action = e.event.action;
 
-            auto drawCard = action == PlayerAction::Hit;
+              auto drawCard = action == PlayerAction::Hit;
 
-            if (action == PlayerAction::Split) {
-              const auto debitAmount = -1 * player.getCurrentHandWager();
-              e.router.send(
-                  this->sourceNode, *currPlayer,
-                  AdjustBankrollCmd{ static_cast<Bankroll>(debitAmount) });
-              e.router.send(this->sourceNode, *currPlayer,
-                            PlayerSplitHandCmd{});
-            }
-
-            if (action == PlayerAction::DoubleDown) {
-              const auto debitAmount = -1 * player.getCurrentHandWager();
-              e.router.send(
-                  this->sourceNode, *currPlayer,
-                  AdjustBankrollCmd{ static_cast<Bankroll>(debitAmount) });
-              e.router.send(this->sourceNode, *currPlayer,
-                            PlayerDoubleHandCmd{});
-
-              drawCard = true;
-
-              if (player.playingLastHand()) {
-                action = PlayerAction::EndTurn;
-              } else {
-                action = PlayerAction::Stand;
+              if (action == PlayerAction::Split) {
+                const auto debitAmount = -1 * player.getCurrentHandWager();
+                e.router.send(
+                    this->sourceNode, *currPlayer,
+                    AdjustBankrollCmd{ static_cast<Bankroll>(debitAmount) });
+                e.router.send(this->sourceNode, *currPlayer,
+                              PlayerSplitHandCmd{});
               }
-            }
 
-            // deal player a card if necessary
-            if (drawCard) {
-              e.router.send(this->sourceNode, this->tableNode,
-                            CardReq{ *currPlayer, false });
-            }
+              if (action == PlayerAction::DoubleDown) {
+                const auto debitAmount = -1 * player.getCurrentHandWager();
+                e.router.send(
+                    this->sourceNode, *currPlayer,
+                    AdjustBankrollCmd{ static_cast<Bankroll>(debitAmount) });
+                e.router.send(this->sourceNode, *currPlayer,
+                              PlayerDoubleHandCmd{});
 
-            // check if player busted
-            if (player.getCurrentHandValue() > Hand::MAX_VALUE) {
-              if (player.playingLastHand()) {
-                action = PlayerAction::EndTurn;
-              } else {
-                action = PlayerAction::Stand;
+                drawCard = true;
+
+                if (player.playingLastHand()) {
+                  action = PlayerAction::EndTurn;
+                } else {
+                  action = PlayerAction::Stand;
+                }
               }
-            }
 
-            if (action == PlayerAction::Stand ||
-                action == PlayerAction::EndTurn) {
-              e.router.send(this->sourceNode, *currPlayer, PlayerEndHandCmd{});
-            }
+              // deal player a card if necessary
+              if (drawCard) {
+                e.router.send(this->sourceNode, this->tableNode,
+                              CardReq{ *currPlayer, false });
+              }
 
-            if (action == PlayerAction::EndTurn) {
-              currPlayer = std::next(currPlayer);
+              // check if player busted
+              if (player.getCurrentHandValue() > Hand::MAX_VALUE) {
+                if (player.playingLastHand()) {
+                  action = PlayerAction::EndTurn;
+                } else {
+                  action = PlayerAction::Stand;
+                }
+              }
+
+              if (action == PlayerAction::Stand ||
+                  action == PlayerAction::EndTurn) {
+                e.router.send(this->sourceNode, *currPlayer,
+                              PlayerEndHandCmd{});
+              }
+
+              if (action == PlayerAction::EndTurn) {
+                currPlayer = std::next(currPlayer);
+              }
             }
           }
         };

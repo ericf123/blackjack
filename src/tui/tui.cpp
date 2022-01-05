@@ -97,6 +97,7 @@ int main(int argc, char** argv) {
       };
 
   router->listen(controllerNode, false, drawCmdHandler);
+  // update all the views every time a card is drawn
   router->listen(controllerNode, true, onCardDrawnHandler);
 
   while (true) {
@@ -111,8 +112,7 @@ int main(int argc, char** argv) {
     const auto dealerHasBlackjack = dealer->checkDealerBlackjack();
     if (!dealerHasBlackjack) {
       while (dealer->getCurrPlayerNode() != table->getEndPlayer()) {
-        router->send(controllerNode, *dealer->getCurrPlayerNode(),
-                     PlayerActionReq{});
+        router->broadcast(controllerNode, InputGetAndMapKeyPress{});
         router->broadcast(controllerNode, ViewUpdateCmd{});
         drawViewsToScreen();
       }

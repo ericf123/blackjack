@@ -23,11 +23,11 @@ struct DrawToScreenCmd {};
 
 struct InputPlayerActionInv {};
 
-struct PlayerActionReq {};
+struct InputBlockUntilKeyPressed {};
 
-struct PlayerActionResp {
-  PlayerAction action;
-  const Player& player;
+struct InputGetAndMapKeyPress {};
+struct PlayerActionCmd {
+  const PlayerAction& action;
 };
 
 struct PlayerDoubleHandCmd {};
@@ -67,6 +67,10 @@ struct TableViewDealerDownCardVisCmd {
 };
 
 template <typename T> struct ToConstRefInv {};
+
+struct TuiPlayerActionCmd {
+  const PlayerAction& action;
+};
 
 struct ViewUpdateCmd {};
 
