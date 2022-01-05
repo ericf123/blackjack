@@ -6,15 +6,16 @@
 
 class StatsView : public View {
 public:
-  StatsView(std::shared_ptr<Player> player, int starty, int startx);
+  StatsView(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
+            int starty, int startx);
 
-  virtual void update() override;
   void setRawCount(int rawCount);
   void setTrueCount(int trueCount);
   void setDecksRemaining(double decksRemaining);
 
 private:
-  std::shared_ptr<Player> player;
+  std::weak_ptr<EventRouter> router;
+  OwningHandle sourceNode;
   int rawCount;
   int trueCount;
   double decksRemaining;

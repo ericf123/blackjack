@@ -1,12 +1,27 @@
 #include "wager_view.h"
+#include "blackjack_events.h"
 #include "strfmt.h"
 #include "view.h"
 #include <form.h>
 #include <limits>
 
-WagerView::WagerView(int starty, int startx)
+WagerView::WagerView(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
+                     int starty, int startx)
     : FormView(bjdim::WAGER_HEIGHT, bjdim::WAGER_WIDTH, starty, startx),
-      prevWager(0) {
+      router(router), sourceNode(sourceNode), prevWager(0) {
+
+  if (auto r = router.lock()) {
+    setWagerRange(0, std::numeric_limits<Wager>::max());
+
+    InvokeHandler<Wager, WagerViewGetWagerInv> getWagerHandler =
+        [this](const WrappedEvent<WagerViewGetWagerInv>& e) {
+          setWagerRange(e.event.minWager, e.event.maxWager);
+          return getWager();
+        };
+
+    r->registerInvokeHandler(sourceNode, getWagerHandler);
+  }
+
   keypad(window.get(), true); // group function keys
 
   // set up wager input form
@@ -24,7 +39,6 @@ WagerView::WagerView(int starty, int startx)
   set_field_fore(fields[0], COLOR_PAIR(bjcolor::PAIR_BKGD_INV));
   set_field_back(fields[0], COLOR_PAIR(bjcolor::PAIR_BKGD_INV));
   set_field_fore(fields[0], A_BOLD);
-  setWagerRange(0, std::numeric_limits<Wager>::max());
 
   form = FormPtr(new_form(&fields[0]), &deleteForm);
   set_form_win(form.get(), window.get());
@@ -93,9 +107,9 @@ Wager WagerView::getWager() {
   return prevWager;
 }
 
-void WagerView::setMaxWager(Wager wager) { setWagerRange(minWager, wager); }
+// void WagerView::setMaxWager(Wager wager) { setWagerRange(minWager, wager); }
 
-void WagerView::setMinWager(Wager wager) { setWagerRange(wager, maxWager); }
+// void WagerView::setMinWager(Wager wager) { setWagerRange(wager, maxWager); }
 
 void WagerView::setWagerRange(Wager min, Wager max) {
   minWager = min;

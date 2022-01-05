@@ -1,14 +1,17 @@
 #include "tui.h"
+#include "blackjack_events.h"
 #include "card.h"
 #include "card_view.h"
 #include "dealer.h"
 #include "hand.h"
 #include "hand_view.h"
+#include "input_node.h"
 #include "stats_view.h"
 #include "table.h"
 #include "table_view.h"
 #include "title_view.h"
 #include "tui_player.h"
+#include "view.h"
 #include "wager_view.h"
 #include <locale.h>
 #include <memory>
@@ -35,7 +38,6 @@ int main(int argc, char** argv) {
     init_pair(bjcolor::PAIR_CARD_RED, bjcolor::CARD_RED, COLOR_WHITE);
     init_pair(bjcolor::PAIR_CARD_DOWN, COLOR_WHITE, bjcolor::CARD_RED);
   }
-
   // set up main window background
   bkgd(COLOR_PAIR(bjcolor::PAIR_BKGD));
   attron(COLOR_PAIR(bjcolor::PAIR_BKGD));
@@ -44,14 +46,27 @@ int main(int argc, char** argv) {
 
   // create models
   const auto DECKS_PER_SHOE = 6U;
+
   const auto table =
       std::make_shared<Table>(DECKS_PER_SHOE, DECK_SIZE * 2, 1.5, true);
-  const auto dealer = std::make_shared<Dealer>(table);
+
+  auto weakRouter = table->getRouter();
+  auto router = weakRouter.lock();
+
+  const auto dealer = std::make_shared<Dealer>(weakRouter, router->requestId(),
+                                               table->getNodeId());
+
+  const auto player =
+      std::make_shared<TuiPlayer>(weakRouter, table->registerPlayer(), 1000);
+
+  // create input handler
+  InputNode inputNode{ 'j', 'k', 'l', ';', weakRouter, router->requestId() };
 
   // create main views
   TitleView titleView;
   const auto tableView = std::make_shared<TableView>(
-      table, dealer, titleView.getBottomY(), 1 + bjdim::STATS_WIDTH);
+      weakRouter, router->requestId(), titleView.getBottomY(),
+      1 + bjdim::STATS_WIDTH);
 
   const auto wagerViewStarty =
       tableView->getTopY() +
@@ -60,41 +75,55 @@ int main(int argc, char** argv) {
       tableView->getLeftX() +
       (tableView->getWidth() / 2 - bjdim::WAGER_WIDTH / 2);
 
-  const auto wagerView =
-      std::make_shared<WagerView>(wagerViewStarty, wagerViewStartx);
+  const auto wagerView = std::make_shared<WagerView>(
+      weakRouter, router->requestId(), wagerViewStarty, wagerViewStartx);
 
-  const auto player =
-      std::make_shared<TuiPlayer>(1000, tableView, wagerView, std::nullopt);
-  dealer->addPlayerToTable(player);
-
-  const auto statsView = std::make_shared<StatsView>(player, 1, 1);
-
-  player->attachStatsView(statsView);
-  player->setCardsPerShoe(DECKS_PER_SHOE * DECK_SIZE);
+  const auto statsView =
+      std::make_shared<StatsView>(weakRouter, router->requestId(), 1, 1);
 
   drawViewsToScreen();
+  const auto controllerNode = router->requestId();
+
+  EventHandler<DrawToScreenCmd> drawCmdHandler =
+      [](const WrappedEvent<DrawToScreenCmd>& e) {
+        (void)e;
+        drawViewsToScreen();
+      };
+
+  EventHandler<CardResp> onCardDrawnHandler =
+      [controllerNode](const WrappedEvent<CardResp>& e) {
+        e.router.broadcast(controllerNode, ViewUpdateCmd{});
+        drawViewsToScreen();
+      };
+
+  router->listen(controllerNode, false, drawCmdHandler);
+  router->listen(controllerNode, true, onCardDrawnHandler);
 
   while (true) {
-    dealer->resetRound();
-    dealer->dealInitialCards();
+    router->send(controllerNode, dealer->getNodeId(), StartRoundCmd{});
 
-    tableView->setDealerUpCardVisible(false);
-    statsView->update();
-    tableView->update();
+    // TODO: move to tui controller
+    router->broadcast(controllerNode, TableViewDealerDownCardVisCmd{ false });
+    router->broadcast(controllerNode, ViewUpdateCmd{});
     drawViewsToScreen();
 
     // TODO: offer insurance
     const auto dealerHasBlackjack = dealer->checkDealerBlackjack();
     if (!dealerHasBlackjack) {
-      dealer->runPlayerActions();
-      dealer->playDealerHand();
+      while (dealer->getCurrPlayerNode() != table->getEndPlayer()) {
+        router->send(controllerNode, *dealer->getCurrPlayerNode(),
+                     PlayerActionReq{});
+        router->broadcast(controllerNode, ViewUpdateCmd{});
+        drawViewsToScreen();
+      }
+      router->broadcast(controllerNode, DealerPlayHandCmd{});
     }
 
+    // TODO: fire round results cmd
     dealer->handleRoundResults();
 
-    tableView->setDealerUpCardVisible(true);
-    tableView->update();
-    statsView->update();
+    router->broadcast(controllerNode, TableViewDealerDownCardVisCmd{ true });
+    router->broadcast(controllerNode, ViewUpdateCmd{});
     drawViewsToScreen();
 
     // wait for input so player can see round results

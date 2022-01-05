@@ -1,14 +1,42 @@
 #include "table_view.h"
+#include "blackjack_events.h"
 #include "dealer.h"
 #include "hand_view.h"
 #include "player.h"
 #include "table.h"
 #include "tui.h"
 
-TableView::TableView(std::shared_ptr<Table> table,
-                     std::shared_ptr<Dealer> dealer, int starty, int startx)
+TableView::TableView(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
+                     int starty, int startx)
     : View(bjdim::TABLE_HEIGHT, COLS - bjdim::STATS_WIDTH - 2, starty, startx),
-      table(table), dealer(dealer) {
+      router(router), sourceNode(sourceNode) {
+
+  auto blackjackPayoutRatio = 0;
+  auto hit17 = true;
+  if (auto r = router.lock()) {
+    EventHandler<TableViewDealerDownCardVisCmd> dealerDownCardVisHandler =
+        [this](const WrappedEvent<TableViewDealerDownCardVisCmd>& e) {
+          setDealerUpCardVisible(e.event.visibile);
+        };
+
+    EventHandler<ViewUpdateCmd> updateHandler =
+        [this](const WrappedEvent<ViewUpdateCmd>& e) {
+          (void)e;
+          draw();
+        };
+
+    r->listen(sourceNode, false, dealerDownCardVisHandler);
+    r->listen(sourceNode, false, updateHandler);
+
+    auto table = r->invokeFirstAvailable<std::reference_wrapper<const Table>>(
+        sourceNode, ToConstRefInv<Table>{});
+    if (table) {
+      const auto& t = table.value().get();
+      blackjackPayoutRatio = t.getBlackjackPayoutRatio();
+      hit17 = t.shouldDealerHitSoft17();
+    }
+  }
+
   // border
   wattron(window.get(), COLOR_PAIR(bjcolor::PAIR_BKGD));
   wbkgd(window.get(), COLOR_PAIR(bjcolor::PAIR_BKGD));
@@ -16,8 +44,8 @@ TableView::TableView(std::shared_ptr<Table> table,
 
   wattron(window.get(), A_BOLD);
   printHCenter(bjdim::HAND_HEIGHT + 1, "Blackjack Pays %0.2f",
-               table->getBlackjackPayoutRatio());
-  if (table->shouldDealerHitSoft17()) {
+               blackjackPayoutRatio);
+  if (hit17) {
     printHCenter(bjdim::HAND_HEIGHT + 2, "Dealer Must Hit Soft 17s");
   } else {
     printHCenter(bjdim::HAND_HEIGHT + 2, "Dealer Stands on All 17s");
@@ -42,10 +70,8 @@ TableView::TableView(std::shared_ptr<Table> table,
   draw();
 }
 
-void TableView::update() { draw(); }
-
-void TableView::setDealerUpCardVisible(bool visibility) {
-  (*handViews.get())[DEALER_HAND_INDEX].setFirstCardVisible(visibility);
+void TableView::setDealerUpCardVisible(bool visibile) {
+  (*handViews.get())[DEALER_HAND_INDEX].setFirstCardVisible(visibile);
 }
 
 void TableView::drawIndividualHand(std::optional<ConstHandIter> beginHand,
@@ -61,24 +87,37 @@ void TableView::drawIndividualHand(std::optional<ConstHandIter> beginHand,
 }
 
 void TableView::draw() {
-  // first hand view is the dealers
-  drawIndividualHand(std::nullopt, dealer->getDealerHand(), std::nullopt,
-                     DEALER_HAND_INDEX);
+  if (auto r = router.lock()) {
+    const auto dealerOpt =
+        r->invokeFirstAvailable<std::reference_wrapper<const Dealer>>(
+            sourceNode, ToConstRefInv<Dealer>{});
+    if (dealerOpt) {
+      const auto& dealer = dealerOpt.value().get();
+      // first hand view is the dealers
+      drawIndividualHand(std::nullopt, dealer.getDealerHand(), std::nullopt,
+                         DEALER_HAND_INDEX);
+    }
 
-  auto playerIter = table->getBeginPlayer();
-  for (auto i = 1U; i < MAX_PLAYERS + 1; ++i) {
-    if (playerIter != table->getEndPlayer()) {
-      const auto& player = *playerIter;
-      const auto hand = player->getCurrentHand();
+    const auto players =
+        r->broadcastInvoke<std::reference_wrapper<const Player>>(
+            sourceNode, ToConstRefInv<Player>{});
+    auto currPlayer = players.cbegin();
+    const auto endPlayer = players.cend();
 
-      if (hand) {
-        drawIndividualHand(player->getBeginHand(), hand, player->getEndHand(),
-                           i);
+    for (auto i = DEALER_HAND_INDEX + 1; i < MAX_PLAYERS + 1; ++i) {
+      if (currPlayer != endPlayer) {
+        const auto& player = (*currPlayer).get();
+        const auto hand = player.getCurrentHand();
+
+        if (hand) {
+          drawIndividualHand(player.getBeginHand(), hand, player.getEndHand(),
+                             i);
+        }
+
+        ++currPlayer;
+      } else {
+        (*handViews.get())[i].hide();
       }
-
-      ++playerIter;
-    } else {
-      (*handViews.get())[i].hide();
     }
   }
 }

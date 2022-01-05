@@ -8,6 +8,4 @@ public:
     wbkgd(window.get(), COLOR_PAIR(bjcolor::PAIR_BKGD_INV));
     wprintw(window.get(), "Blackjack");
   }
-
-  virtual void update() override {}
 };

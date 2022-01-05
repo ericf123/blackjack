@@ -1,42 +1,48 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "blackjack_events.h"
 #include "hand.h"
 #include "tui_player.h"
 #include "view.h"
 
-void TuiPlayer::setCardsPerShoe(std::size_t cardsPerShoe) {
-  hiLo.setCardsPerShoe(cardsPerShoe);
-}
+TuiPlayer::TuiPlayer(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
+                     Bankroll bankroll)
+    : Player(router, sourceNode, bankroll) {
+  if (auto r = router.lock()) {
+    EventHandler<PlayerActionReq> actionReqHandler =
+        [this](const WrappedEvent<PlayerActionReq>& e) {
+          (void)e;
+          const auto actions = e.router.broadcastInvoke<PlayerAction>(
+              this->sourceNode, InputPlayerActionInv{});
+          auto actionToSend = PlayerAction::InvalidInput;
+          if (!actions.empty()) {
+            // there should only be one input node on a TUI
+            actionToSend = sanitizeAction(actions.front());
+          }
 
-void TuiPlayer::notifyShuffle() {
-  hiLo.reset();
-  updateStatsViewCount();
-  updateViews();
-  drawViewsToScreen();
-}
+          // TODO: use specific dealer node instead of broadcast?
+          e.router.broadcast(this->sourceNode,
+                             PlayerActionResp{ actionToSend, *this });
+        };
 
-void TuiPlayer::observeCard(const Card& card) {
-  hiLo.addCard(card);
-  updateStatsViewCount();
-  updateViews();
-  drawViewsToScreen();
-}
+    InvokeHandler<Wager, PlayerGetWagerInv> wagerInvHandler =
+        [this, r](const WrappedEvent<PlayerGetWagerInv>& e) -> Wager {
+      (void)e;
+      const auto wagerOpt = r->invokeFirstAvailable<Wager>(
+          this->sourceNode,
+          // TODO: table minimum bet
+          WagerViewGetWagerInv{ 0, static_cast<Wager>(this->bankroll) });
+      if (wagerOpt) {
+        return wagerOpt.value();
+      } else {
+        return 0;
+      }
+    };
 
-void TuiPlayer::receiveCard(const Card& card) {
-  currHand->addCard(card);
-  updateViews();
-  drawViewsToScreen();
-}
-
-PlayerAction TuiPlayer::getNextAction() {
-  auto actualAction = PlayerAction::InvalidInput;
-
-  while (actualAction == PlayerAction::InvalidInput) {
-    actualAction = sanitizeAction(getDesiredAction());
+    r->registerInvokeHandler(sourceNode, actionReqHandler);
+    r->registerInvokeHandler(sourceNode, wagerInvHandler);
   }
-
-  return actualAction;
 }
 
 PlayerAction TuiPlayer::sanitizeAction(PlayerAction action) {
@@ -64,81 +70,24 @@ PlayerAction TuiPlayer::sanitizeAction(PlayerAction action) {
   }
 }
 
-PlayerAction TuiPlayer::getDesiredAction() {
-  auto action = PlayerAction::InvalidInput;
-  while (action == PlayerAction::InvalidInput) {
-    auto userInputChar = getch();
-    if (userInputChar == hitKey) {
-      action = PlayerAction::Hit;
-    } else if (userInputChar == standKey) {
-      action = PlayerAction::Stand;
-    } else if (userInputChar == doubleKey) {
-      action = PlayerAction::DoubleDown;
-    } else if (userInputChar == splitKey) {
-      action = PlayerAction::Split;
-    } else {
-      action = PlayerAction::InvalidInput;
-    }
-  }
+// void TuiPlayer::splitCurrentHand() {
+//   hands.push_back(currHand->split());
+//   updateViews();
+//   drawViewsToScreen();
+// }
 
-  return action;
-}
+// void TuiPlayer::endCurrentHand() {
+//   const auto justDoubled = currHand->isDoubled();
+//   const auto finishedIntermediateSplitHand =
+//       !playingLastHand() && currHand->isSplit();
+//   if (justDoubled || finishedIntermediateSplitHand) {
+//     getch();
+//   }
 
-void TuiPlayer::splitCurrentHand() {
-  hands.push_back(currHand->split());
-  updateViews();
-  drawViewsToScreen();
-}
+//   if (!playingLastHand()) {
+//     ++currHand;
+//   }
 
-void TuiPlayer::endCurrentHand() {
-  const auto justDoubled = currHand->isDoubled();
-  const auto finishedIntermediateSplitHand =
-      !playingLastHand() && currHand->isSplit();
-  if (justDoubled || finishedIntermediateSplitHand) {
-    getch();
-  }
-
-  if (!playingLastHand()) {
-    ++currHand;
-  }
-
-  updateViews();
-  drawViewsToScreen();
-}
-
-Wager TuiPlayer::getWager() {
-  auto wager = 0;
-
-  if (!wagerView.expired()) {
-    auto ownedWagerView = wagerView.lock();
-    ownedWagerView->setMaxWager(static_cast<Wager>(bankroll));
-    wager = ownedWagerView->getWager();
-  }
-
-  return wager;
-}
-
-void TuiPlayer::attachStatsView(std::weak_ptr<StatsView> viewPtr) {
-  statsView = viewPtr;
-}
-
-void TuiPlayer::updateViews() {
-  if (!tableView.expired()) {
-    tableView.lock()->update();
-  }
-
-  if (statsView && !statsView.value().expired()) {
-    statsView.value().lock()->update();
-  }
-
-  // no need to update wager view as it's usually hidden
-}
-
-void TuiPlayer::updateStatsViewCount() {
-  if (statsView && !statsView->expired()) {
-    const auto sv = statsView.value().lock();
-    sv->setRawCount(hiLo.getRawCount());
-    sv->setTrueCount(hiLo.getTrueCount());
-    sv->setDecksRemaining(hiLo.getDecksRemaining());
-  }
-}
+//   updateViews();
+//   drawViewsToScreen();
+// }

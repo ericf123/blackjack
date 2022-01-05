@@ -15,7 +15,7 @@ template <typename T> constexpr EventId getEventId() {
 template <typename E> struct WrappedEvent {
   static constexpr EventId eventId = getEventId<E>();
   const NodeId sourceId;
-  NodeId destId; // multiple destinations for broadcast
+  const NodeId destId;
   EventRouter& router;
   const E& event;
 };

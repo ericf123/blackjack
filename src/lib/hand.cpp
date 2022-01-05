@@ -1,5 +1,6 @@
 #include "hand.h"
 #include "card.h"
+#include <iostream>
 #include <optional>
 #include <vector>
 
@@ -13,6 +14,7 @@ void Hand::reset() {
 
 void Hand::addCard(const Card& card) {
   cards.push_back(card);
+  std::cout << cards.size() << std::endl;
   value = sumCards(cards.cbegin(), cards.cend());
 }
 
@@ -40,7 +42,7 @@ ConstCardIterator Hand::getEndIter() const { return cards.cend(); }
 
 Wager Hand::getWager() const { return wager; }
 
-Wager Hand::getValue() const { return value; }
+CardTotal Hand::getValue() const { return value; }
 
 bool Hand::canDouble() const { return !isDoubled() && cards.size() == 2; }
 

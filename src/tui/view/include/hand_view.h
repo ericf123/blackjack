@@ -19,7 +19,7 @@ public:
                     std::optional<ConstHandIter> endHand);
   void setFirstCardVisible(bool visible);
 
-  virtual void update() override;
+  void update();
   virtual void show() override;
   virtual void hide() override;
 

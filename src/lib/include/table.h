@@ -1,12 +1,14 @@
 #pragma once
 
+#include "event_router.h"
 #include "player.h"
 #include "shoe.h"
+#include <list>
 #include <memory>
 #include <optional>
-#include <vector>
 
-using PlayerPtrIter = std::vector<std::shared_ptr<Player>>::iterator;
+using PlayerNodeIter = std::list<NodeId>::iterator;
+using ConstPlayerNodeIter = std::list<NodeId>::const_iterator;
 
 class Table {
 public:
@@ -16,20 +18,19 @@ public:
   bool shouldDealerHitSoft17() const { return dealerHitSoft17; }
   double getBlackjackPayoutRatio() const { return blackjackPayoutRatio; }
 
-  PlayerPtrIter getBeginPlayer();
-  PlayerPtrIter getEndPlayer();
+  OwningHandle registerPlayer();
+  std::weak_ptr<EventRouter> getRouter();
+  NodeId getNodeId() const;
 
-  void addPlayer(std::shared_ptr<Player> player);
-  void showCardToPlayers(const Card& card);
-  Card drawCard();
-  Card drawCard(bool observable);
-  void shuffleIfNeeded();
-  void forceShuffle();
+  ConstPlayerNodeIter getBeginPlayer() const;
+  ConstPlayerNodeIter getEndPlayer() const;
 
 private:
   const double blackjackPayoutRatio;
   const bool dealerHitSoft17;
   bool firstRound;
   Shoe shoe;
-  std::vector<std::shared_ptr<Player>> players;
+  std::list<NodeId> players;
+  std::shared_ptr<EventRouter> router;
+  OwningHandle sourceNode;
 };

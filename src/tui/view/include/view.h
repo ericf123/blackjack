@@ -23,8 +23,6 @@ public:
   View(View&& view) = default;
   virtual ~View() = default;
 
-  virtual void update() = 0;
-
   int getHeight();
   int getWidth();
   int getTopY();

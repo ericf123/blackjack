@@ -12,7 +12,7 @@ class CardView : public View {
 public:
   CardView(std::optional<Card> card, int starty, int startx);
   void setCard(std::optional<Card> card);
-  virtual void update() override;
+  void update();
 
 private:
   void draw();

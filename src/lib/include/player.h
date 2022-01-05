@@ -1,5 +1,6 @@
 #pragma once
 
+#include "event_router.h"
 #include "hand.h"
 #include "player_action.h"
 #include <list>
@@ -11,37 +12,24 @@ using HandIter = std::list<Hand>::iterator;
 
 class Player {
 public:
-  Player(Bankroll bankroll)
-      : bankroll(bankroll), currHand(0), dealerUpCard(std::nullopt) {}
-  virtual void notifyShuffle() = 0;
-  virtual void observeCard(const Card& card) = 0;
-  virtual PlayerAction getNextAction() = 0;
-  virtual Wager getWager() = 0;
+  Player(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
+         Bankroll bankroll);
+  Bankroll getBankroll() const;
 
-  virtual void beginRound(const Card& firstCard, Wager wager);
-  virtual void receiveCard(const Card& card);
-  virtual void setDealerUpCard(const Card& card);
+  std::optional<ConstHandIter> getBeginHand() const;
+  std::optional<ConstHandIter> getEndHand() const;
 
-  virtual void splitCurrentHand();
-  virtual void doubleCurrentHand();
-  virtual void endCurrentHand();
-
-  virtual void credit(Wager winnings);
-  virtual void debit(Wager losses);
-
-  Bankroll getBankroll();
-
-  std::optional<ConstHandIter> getBeginHand();
-  std::optional<ConstHandIter> getEndHand();
-
-  bool playingLastHand();
-  CardTotal getCurrentHandValue();
-  Wager getCurrentHandWager();
-  std::optional<ConstHandIter> getCurrentHand();
+  bool playingLastHand() const;
+  CardTotal getCurrentHandValue() const;
+  Wager getCurrentHandWager() const;
+  std::optional<ConstHandIter> getCurrentHand() const;
+  NodeId getNodeId() const;
 
 protected:
+  std::weak_ptr<EventRouter> router;
+  OwningHandle sourceNode;
   Bankroll bankroll;
-  HandIter currHand;
   std::optional<Card> dealerUpCard;
   std::list<Hand> hands;
+  HandIter currHand;
 };

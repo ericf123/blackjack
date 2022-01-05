@@ -12,48 +12,12 @@
 
 class TuiPlayer : public Player {
 public:
-  TuiPlayer(double bankroll, std::weak_ptr<TableView> tableView,
-            std::weak_ptr<WagerView> wagerView,
-            std::optional<std::weak_ptr<StatsView>> statsView, chtype hitKey,
-            chtype standKey, chtype doubleKey, chtype splitKey)
-      : Player(bankroll), tableView(tableView), wagerView(wagerView),
-        statsView(statsView), hitKey(hitKey), standKey(standKey),
-        doubleKey(doubleKey), splitKey(splitKey), hiLo(0) {}
+  TuiPlayer(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
+            Bankroll bankroll);
 
-  TuiPlayer(double bankroll, std::weak_ptr<TableView> tableView,
-            std::weak_ptr<WagerView> wagerView,
-            std::optional<std::weak_ptr<StatsView>> statsView)
-      : TuiPlayer(bankroll, tableView, wagerView, statsView, 'j', 'k', 'l',
-                  ';') {}
-
+  // TODO: necessary?
   virtual ~TuiPlayer() = default;
 
-  virtual void notifyShuffle() override;
-  virtual void observeCard(const Card& card) override;
-  virtual PlayerAction getNextAction() override;
-  virtual Wager getWager() override;
-
-  virtual void receiveCard(const Card& card) override;
-  virtual void splitCurrentHand() override;
-  virtual void endCurrentHand() override;
-
-  void attachStatsView(std::weak_ptr<StatsView> statsView);
-  void setCardsPerShoe(std::size_t cardsPerShoe);
-
 private:
-  std::weak_ptr<TableView> tableView;
-  std::weak_ptr<WagerView> wagerView;
-  std::optional<std::weak_ptr<StatsView>> statsView;
-
-  int hitKey;
-  int standKey;
-  int doubleKey;
-  int splitKey;
-
-  HiLo hiLo;
-
-  PlayerAction getDesiredAction();
   PlayerAction sanitizeAction(PlayerAction action);
-  void updateViews();
-  void updateStatsViewCount();
 };

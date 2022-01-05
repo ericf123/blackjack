@@ -1,47 +1,67 @@
 #include "table.h"
+#include "blackjack_events.h"
+#include "event_router.h"
 #include <algorithm>
+#include <functional>
+#include <memory>
 #include <optional>
 
 Table::Table(size_t numDecks, size_t minCardsInShoe,
              double blackjackPayoutRatio, bool dealerHitSoft17)
     : blackjackPayoutRatio(blackjackPayoutRatio),
       dealerHitSoft17(dealerHitSoft17), firstRound(true),
-      shoe(numDecks, minCardsInShoe) {}
+      shoe(numDecks, minCardsInShoe), router(std::make_shared<EventRouter>()) {
+  sourceNode = router->requestId();
 
-void Table::addPlayer(std::shared_ptr<Player> player) {
-  players.push_back(player);
+  EventHandler<CardReq> cardRequestHandler =
+      [this](const WrappedEvent<CardReq>& e) {
+        e.router.send(sourceNode, e.event.receiver, CardResp{ shoe.draw() },
+                      e.event.secret);
+      };
+  EventHandler<ShuffleIfNeededCmd> shuffleIfNeededCmdHandler =
+      [this](const WrappedEvent<ShuffleIfNeededCmd>& e) {
+        (void)e;
+
+        if (firstRound || shoe.needsShuffle()) {
+          shoe.shuffle();
+          firstRound = false;
+        }
+      };
+  EventHandler<TableBeginPlayerReq> beginPlayerHandler =
+      [this](const WrappedEvent<TableBeginPlayerReq>& e) {
+        e.router.send(sourceNode, e.sourceId,
+                      TableBeginPlayerResp{ players.begin() });
+      };
+  EventHandler<TableEndPlayerReq> endPlayerHandler =
+      [this](const WrappedEvent<TableEndPlayerReq>& e) {
+        e.router.send(sourceNode, e.sourceId,
+                      TableEndPlayerResp{ players.end() });
+      };
+
+  InvokeHandler<std::reference_wrapper<const Table>, ToConstRefInv<Table>>
+      toConstRefInvHandler =
+          [this](const WrappedEvent<ToConstRefInv<Table>>& e) -> const Table& {
+    (void)e;
+    return *this;
+  };
+
+  router->listen(sourceNode, false, cardRequestHandler);
+  router->listen(sourceNode, false, shuffleIfNeededCmdHandler);
+  router->listen(sourceNode, false, beginPlayerHandler);
+  router->listen(sourceNode, false, endPlayerHandler);
+  router->registerInvokeHandler(sourceNode, toConstRefInvHandler);
 }
 
-PlayerPtrIter Table::getBeginPlayer() { return players.begin(); }
-
-PlayerPtrIter Table::getEndPlayer() { return players.end(); }
-
-void Table::showCardToPlayers(const Card& card) {
-  for (auto& player : players) {
-    player->observeCard(card);
-  }
+OwningHandle Table::registerPlayer() {
+  auto handle = router->requestId();
+  players.push_back(*handle);
+  return handle;
 }
 
-Card Table::drawCard(bool observable) {
-  firstRound = false;
-  const auto card = shoe.draw();
+std::weak_ptr<EventRouter> Table::getRouter() { return router; }
 
-  if (observable) {
-    showCardToPlayers(card);
-  }
+NodeId Table::getNodeId() const { return *sourceNode; }
 
-  return card;
-}
+ConstPlayerNodeIter Table::getBeginPlayer() const { return players.cbegin(); };
 
-Card Table::drawCard() { return drawCard(true); }
-
-void Table::shuffleIfNeeded() {
-  // TODO: shuffle with 2 decks left??
-  if (firstRound || shoe.needsShuffle()) {
-    forceShuffle();
-    const auto notify = [](std::shared_ptr<Player> p) { p->notifyShuffle(); };
-    std::for_each(players.begin(), players.end(), notify);
-  }
-}
-
-void Table::forceShuffle() { shoe.shuffle(); }
+ConstPlayerNodeIter Table::getEndPlayer() const { return players.cend(); };

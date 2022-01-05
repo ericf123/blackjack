@@ -1,4 +1,4 @@
-add_executable(bjtui tui.cpp tui_player.cpp view/card_view.cpp 
+add_executable(bjtui tui.cpp tui_player.cpp input_node.cpp view/card_view.cpp 
                      view/hand_view.cpp view/stats_view.cpp view/table_view.cpp
                      view/view.cpp view/wager_view.cpp
                      view/include/title_view.h view/include/view.h)

@@ -7,7 +7,7 @@
 
 using namespace bjcard;
 using ConstCardIterator = std::vector<Card>::const_iterator;
-using Wager = uint32_t;
+using Wager = int;
 
 class Hand {
 public:
@@ -37,11 +37,11 @@ public:
   bool isBusted() const;
 
 private:
+  std::vector<Card> cards;
   bool isDoubledDown;
   bool isHandSplit;
   Wager wager;
   CardTotal value;
-  std::vector<Card> cards;
 };
 
 static inline std::ostream& operator<<(std::ostream& os, Hand hand) {
