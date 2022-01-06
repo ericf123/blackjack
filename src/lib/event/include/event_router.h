@@ -4,109 +4,70 @@
 #include "wrapped_event.h"
 #include <any>
 #include <cassert>
-#include <cxxabi.h>
 #include <functional>
 #include <iostream>
 #include <optional>
 #include <unordered_map>
 #include <unordered_set>
 
-template <typename R, typename E>
-using InvokeHandler = std::function<R(const WrappedEvent<E>&)>;
-
-template <typename E> using EventHandler = InvokeHandler<void, E>;
-
-using RouteTable = std::unordered_map<EventId, std::any>;
-// using RouteTable = std::unordered_map<EventId, std::function<void()>>;
+template <typename Return, template <typename> typename Event>
+using EventHandler = std::function<Return(const WrappedEvent<Return, Event>&)>;
 
 class EventRouter {
 public:
   EventRouter() : nextId(0) {}
 
   OwningHandle requestId() {
+    // TODO: prevent id overflow
     const auto assignedId = nextId++;
     auto handle = std::make_shared<NodeId>(assignedId);
     nodes[assignedId] = handle;
-    routes[assignedId] = {};
     return handle;
   }
 
-  template <typename Event>
-  void send(OwningHandle source, const NodeId& dest, const Event& e,
-            bool isPrivate) {
-    if (validateNode(dest)) {
-      auto wrapped = createWrapped(*source, dest, e);
-      sendImpl(source, dest, wrapped);
-
-      const auto eventId = wrapped.eventId;
-      if (!isPrivate &&
-          promiscuousListeners.find(eventId) != promiscuousListeners.end()) {
-        std::unordered_set<NodeId> deadNodes;
-        auto& listeners = promiscuousListeners[eventId];
-
-        for (const auto& nodeId : listeners) {
-          if (validateNode(nodeId)) {
-            sendImpl(source, nodeId, wrapped);
-          } else {
-            deadNodes.insert(nodeId);
-          }
-        }
-
-        for (const auto& nodeId : deadNodes) {
-          listeners.erase(nodeId);
-          releaseId(nodeId);
-        }
-      }
-    } else {
-      releaseId(dest);
-    }
+  template <typename Return, template <typename> typename Event>
+  std::optional<Return> invoke(OwningHandle source, const NodeId& dest,
+                               const Event<Return>& e, bool isPrivate) {
+    std::optional<Return> result;
+    invokeImpl<true>(source, dest, e, isPrivate, result);
+    return result;
   }
 
-  template <typename Event>
-  void send(OwningHandle source, const NodeId& dest, const Event& e) {
-    send(source, dest, e, false);
+  template <template <typename> typename Event>
+  void invoke(OwningHandle source, const NodeId& dest, const Event<void>& e,
+              bool isPrivate) {
+    std::optional<int> _fake;
+    invokeImpl<false>(source, dest, e, isPrivate, _fake);
   }
 
-  // TODO: merge Invoke/Event handler processing (invoke/send)
-  template <typename R, typename Event>
-  std::optional<R> invoke(OwningHandle source, const NodeId& dest,
-                          const Event& e) {
-    if (validateNode(dest)) {
-      return invokeImpl<R, Event>(source, dest,
-                                  createWrapped(*source, dest, e));
-    }
-
-    releaseId(dest);
-    return std::nullopt;
+  template <typename Return, template <typename> typename Event>
+  std::optional<Return> invoke(OwningHandle source, const NodeId& dest,
+                               const Event<Return>& e) {
+    return invoke(source, dest, e, false);
   }
 
-  template <typename R, typename Event>
-  std::vector<R> broadcastInvoke(OwningHandle source, const Event& e) {
-    std::unordered_set<NodeId> deadNodes;
-    std::vector<R> results;
+  template <template <typename> typename Event>
+  void invoke(OwningHandle source, const NodeId& dest, const Event<void>& e) {
+    return invoke(source, dest, e, false);
+  }
 
-    auto wrapped = createWrapped(*source, BROADCAST_ID, e);
-    for (const auto& [destId, _] : nodes) {
-      if (validateNode(destId)) {
-        auto result = invokeImpl<R, Event>(source, destId, wrapped);
-        if (result) {
-          results.push_back(result.value());
-        }
-      } else {
-        deadNodes.insert(destId);
-      }
-    }
-
-    for (const auto& nodeId : deadNodes) {
-      releaseId(nodeId);
-    }
-
+  template <typename Return, template <typename> typename Event>
+  std::vector<Return> broadcast(OwningHandle source, const Event<Return>& e) {
+    std::vector<Return> results;
+    broadcastImpl<true>(source, e, results);
     return results;
   }
 
-  template <typename R, typename Event>
-  std::optional<R> invokeFirstAvailable(OwningHandle source, const Event& e) {
-    const auto results = broadcastInvoke<R>(source, e);
+  template <template <typename> typename Event>
+  void broadcast(OwningHandle source, const Event<void>& e) {
+    std::vector<int> _fake;
+    broadcastImpl<false>(source, e, _fake);
+  }
+
+  template <typename Return, template <typename> typename Event>
+  std::optional<Return> invokeFirstAvailable(OwningHandle source,
+                                             const Event<Return>& e) {
+    const auto results = broadcast(source, e);
     if (results.empty()) {
       return std::nullopt;
     }
@@ -114,59 +75,132 @@ public:
     return { results.front() };
   };
 
-  template <typename Event>
-  void broadcast(OwningHandle source, const Event& e) {
-    std::unordered_set<NodeId> deadNodes;
-    auto wrapped = createWrapped(*source, BROADCAST_ID, e);
-    for (const auto& [destId, _] : nodes) {
-      if (validateNode(destId)) {
-        sendImpl(source, destId, wrapped);
-      } else {
-        deadNodes.insert(destId);
-      }
-    }
-
-    for (const auto& nodeId : deadNodes) {
-      releaseId(nodeId);
-    }
-  }
-
-  template <typename Event>
+  template <typename Return, template <typename> typename Event>
   void listen(OwningHandle dest, bool promiscuous,
-              EventHandler<Event> handler) {
-    listenImpl(dest, promiscuous, handler);
-  }
+              EventHandler<Return, Event> handler) {
+    const auto eventId = getEventId<Return, Event>();
+    const auto destId = *dest;
+    if (routes.find(eventId) == routes.end()) {
+      routes.emplace(std::make_pair(eventId, RouteTable{}));
+    }
 
-  template <typename R, typename Event>
-  void registerInvokeHandler(OwningHandle dest,
-                             InvokeHandler<R, Event> handler) {
-    listenImpl(dest, false, handler);
+    routes[eventId].map[destId] = handler;
+
+    if (promiscuous) {
+      routes[eventId].promiscuousListeners.emplace(destId);
+    }
   }
 
   void unlisten(OwningHandle dest, const EventId& eventId) {
     const auto destId = *dest;
-    if (validateNode(destId)) {
-      // attempt to remove from promiscuous listeners
-      if (promiscuousListeners.find(eventId) != promiscuousListeners.end()) {
-        promiscuousListeners[eventId].erase(destId);
-      }
-      // remove from dest's route table
-      routes[destId].erase(eventId);
+    if (routes.find(eventId) != routes.end()) {
+      routes[eventId].map.erase(destId);
+      routes[eventId].promiscuousListeners.erase(destId);
     }
   }
 
 private:
+  using RouteMap = std::unordered_map<NodeId, std::any>;
+  struct RouteTable {
+    RouteMap map;
+    std::unordered_set<NodeId> promiscuousListeners;
+  };
+  enum class RouteStatus {
+    Valid,
+    InvalidEvent,
+    NodeExpired,
+    HandlerNotFound,
+    Loop
+  };
   size_t nextId;
   std::unordered_map<NodeId, std::weak_ptr<NodeId>> nodes;
-  // TODO: merge promiscuous and routes
-  // umap<EventId, umap<NodeId, any(Invoke/EventHandler)>>
-  std::unordered_map<EventId, std::unordered_set<NodeId>> promiscuousListeners;
-  std::unordered_map<NodeId, RouteTable> routes;
+  std::unordered_map<EventId, RouteTable> routes;
 
-  template <typename Event>
-  WrappedEvent<Event> createWrapped(const NodeId& source, const NodeId& dest,
-                                    const Event& e) {
-    return WrappedEvent<Event>{ source, dest, *this, e };
+  template <typename Return, template <typename> typename Event>
+  WrappedEvent<Return, Event> createWrapped(const NodeId& source,
+                                            const NodeId& dest,
+                                            const Event<Return>& e) {
+    return WrappedEvent<Return, Event>{ source, dest, *this, e };
+  }
+
+  template <bool WriteOutput, typename Return,
+            template <typename> typename Event, typename OutType>
+  void invokeImpl(OwningHandle source, const NodeId& dest,
+                  const Event<Return>& e, bool isPrivate,
+                  std::optional<OutType>& output) {
+    static_assert(!WriteOutput || std::is_same<Return, OutType>());
+    const auto eventId = getEventId<Return, Event>();
+
+    if (routes.find(eventId) != routes.end()) {
+      auto& routeTable = routes[eventId];
+      const auto wrapped = createWrapped(*source, dest, e);
+
+      std::unordered_set<NodeId> deadNodes;
+
+      const auto routeStatus = validateRoute(*source, dest, eventId);
+      if (routeStatus == RouteStatus::Valid) {
+        if constexpr (WriteOutput) {
+          output.emplace(invokeUnsafe(source, dest, wrapped));
+        } else {
+          invokeUnsafe(source, dest, wrapped);
+        }
+      } else if (routeStatus == RouteStatus::NodeExpired) {
+        deadNodes.insert(dest);
+      }
+
+      if (!isPrivate) {
+        for (const auto& node : routeTable.promiscuousListeners) {
+          // avoid invoking the same handler twice for promiscuous handlers that
+          // are invoked directly
+          if (node != dest) {
+            const auto routeStatus = validateRoute(*source, node, eventId);
+            if (routeStatus == RouteStatus::Valid) {
+              invokeUnsafe(source, node, wrapped);
+            } else if (routeStatus == RouteStatus::NodeExpired) {
+              deadNodes.insert(node);
+            }
+          }
+        }
+      }
+
+      for (const auto& node : deadNodes) {
+        routeTable.map.erase(node);
+        routeTable.promiscuousListeners.erase(node);
+        releaseId(node);
+      }
+    }
+  }
+
+  template <bool WriteOutput, typename Return,
+            template <typename> typename Event, typename OutType>
+  void broadcastImpl(OwningHandle source, const Event<Return>& e,
+                     std::vector<OutType>& output) {
+    static_assert(!WriteOutput || std::is_same<Return, OutType>());
+
+    const auto eventId = getEventId<Return, Event>();
+    if (routes.find(eventId) != routes.end()) {
+      std::unordered_set<NodeId> deadNodes;
+
+      const auto wrapped = createWrapped(*source, BROADCAST_ID, e);
+      for (const auto& [destId, _] : routes[eventId].map) {
+        const auto routeStatus = validateRoute(*source, destId, eventId);
+        if (routeStatus == RouteStatus::Valid) {
+          if constexpr (WriteOutput) {
+            output.push_back(invokeUnsafe(source, destId, wrapped));
+          } else {
+            invokeUnsafe(source, destId, wrapped);
+          }
+        } else if (routeStatus == RouteStatus::NodeExpired) {
+          deadNodes.insert(destId);
+        }
+      }
+
+      for (const auto& nodeId : deadNodes) {
+        routes[eventId].map.erase(nodeId);
+        routes[eventId].promiscuousListeners.erase(nodeId);
+        releaseId(nodeId);
+      }
+    }
   }
 
   // sends from source to dest
@@ -174,68 +208,32 @@ private:
   // this allows a node to differentiate between receiving a packet in
   // promiscuous mode vs. receiving a packet from a direct route
   // TODO: validate R can be stored in optional?
-  template <typename R, typename Event>
-  std::optional<R> invokeImpl(OwningHandle source, const NodeId& dest,
-                              const WrappedEvent<Event>& e) {
+  template <typename Return, template <typename> typename Event>
+  Return invokeUnsafe(OwningHandle source, const NodeId& dest,
+                      const WrappedEvent<Return, Event>& e) {
     assert(*source == e.sourceId);
-
-    if (validateNode(dest) && *source != dest) {
-      auto destRoutes = routes[dest];
-      if (destRoutes.find(e.eventId) != destRoutes.end()) {
-        assert(typeid(InvokeHandler<R, Event>) == destRoutes[e.eventId].type());
-        return { std::any_cast<InvokeHandler<R, Event>>(destRoutes[e.eventId])(
-            e) };
-      }
-    }
-
-    return std::nullopt;
+    return std::any_cast<EventHandler<Return, Event>>(
+        routes[e.eventId].map[dest])(e);
   }
 
-  template <typename Event>
-  void sendImpl(OwningHandle source, const NodeId& dest,
-                const WrappedEvent<Event>& e) {
-    assert(*source == e.sourceId);
+  RouteStatus validateRoute(const NodeId& sourceId, const NodeId& destId,
+                            const EventId& eventId) {
+    auto retVal = RouteStatus::Valid;
 
-    if (validateNode(dest) && *source != dest) {
-      auto destRoutes = routes[dest];
-      if (destRoutes.find(e.eventId) != destRoutes.end()) {
-        std::any_cast<EventHandler<Event>>(destRoutes[e.eventId])(e);
-      }
-    }
-  }
-
-  template <typename R, typename Event>
-  void listenImpl(OwningHandle dest, bool promiscuous,
-                  InvokeHandler<R, Event> callback) {
-    const auto eventId = getEventId<Event>();
-    const auto destId = *dest;
-    if (validateNode(destId)) {
-      if (promiscuous) {
-        if (promiscuousListeners.find(eventId) != promiscuousListeners.end()) {
-          promiscuousListeners[eventId].insert(destId);
-        } else {
-          promiscuousListeners[eventId] = { destId };
-        }
-      }
-
-      routes[destId][eventId] = callback;
-    }
-  }
-
-  bool validateNode(const NodeId& nodeId) {
-    auto retVal = false;
-
-    if (nodes.find(nodeId) != nodes.end()) {
-      if (!nodes[nodeId].expired()) {
-        retVal = true;
-      }
+    if (!validateNode(destId)) {
+      retVal = RouteStatus::NodeExpired;
+    } else if (routes[eventId].map.find(destId) == routes[eventId].map.end()) {
+      retVal = RouteStatus::HandlerNotFound;
+    } else if (sourceId == destId) {
+      retVal = RouteStatus::Loop;
     }
 
     return retVal;
   }
 
-  void releaseId(const NodeId& id) {
-    nodes.erase(id);
-    routes.erase(id);
+  bool validateNode(const NodeId& nodeId) {
+    return nodes.find(nodeId) != nodes.end() && !nodes[nodeId].expired();
   }
+
+  void releaseId(const NodeId& id) { nodes.erase(id); }
 };

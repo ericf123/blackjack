@@ -10,20 +10,21 @@ TuiPlayer::TuiPlayer(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
                      Bankroll bankroll)
     : Player(router, sourceNode, bankroll) {
   if (auto r = router.lock()) {
-    EventHandler<TuiPlayerActionCmd> actionCmdHandler =
-        [this](const WrappedEvent<TuiPlayerActionCmd>& e) {
+    EventHandler<void, TuiPlayerActionCmd> actionCmdHandler =
+        [this](const WrappedEvent<void, TuiPlayerActionCmd>& e) {
           (void)e;
           const auto actionToSend = sanitizeAction(e.event.action);
-          e.router.broadcast(this->sourceNode, PlayerActionCmd{ actionToSend });
+          e.router.broadcast(this->sourceNode,
+                             PlayerActionCmd<void>{ actionToSend });
         };
 
-    InvokeHandler<Wager, PlayerGetWagerInv> wagerInvHandler =
-        [this, r](const WrappedEvent<PlayerGetWagerInv>& e) -> Wager {
+    EventHandler<Wager, PlayerGetWagerInv> wagerInvHandler =
+        [this, r](const WrappedEvent<Wager, PlayerGetWagerInv>& e) -> Wager {
       (void)e;
-      const auto wagerOpt = r->invokeFirstAvailable<Wager>(
+      const auto wagerOpt = r->invokeFirstAvailable(
           this->sourceNode,
           // TODO: table minimum bet
-          WagerViewGetWagerInv{ 0, static_cast<Wager>(this->bankroll) });
+          WagerViewGetWagerInv<Wager>{ 0, static_cast<Wager>(this->bankroll) });
       if (wagerOpt) {
         return wagerOpt.value();
       } else {
@@ -31,18 +32,19 @@ TuiPlayer::TuiPlayer(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
       }
     };
 
-    EventHandler<PlayerEndHandCmd> endHandHandler =
-        [this](const WrappedEvent<PlayerEndHandCmd>& e) {
+    EventHandler<void, PlayerEndHandCmd> endHandHandler =
+        [this](const WrappedEvent<void, PlayerEndHandCmd>& e) {
           (void)e;
           if (!playingLastHand()) {
-            if (currHand->isDoubled() || currHand->isSplit()) {
-              e.router.broadcast(this->sourceNode, InputBlockUntilKeyPressed{});
+            if (currHand->isDoubled() || currHand->isBusted()) {
+              e.router.broadcast(this->sourceNode,
+                                 InputBlockUntilKeyPressed<void>{});
             }
             currHand = std::next(currHand);
           }
         };
 
-    r->registerInvokeHandler(sourceNode, wagerInvHandler);
+    r->listen(sourceNode, false, wagerInvHandler);
     r->listen(sourceNode, false, actionCmdHandler);
     r->listen(sourceNode, false, endHandHandler);
   }

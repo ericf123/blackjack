@@ -7,8 +7,8 @@ StatsView::StatsView(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
     : View(LINES - 2, bjdim::STATS_WIDTH, starty, startx), router(router),
       sourceNode(sourceNode), rawCount(0), trueCount(0), decksRemaining(0) {
   if (auto r = router.lock()) {
-    EventHandler<ViewUpdateCmd> updateHandler =
-        [this](const WrappedEvent<ViewUpdateCmd>& e) {
+    EventHandler<void, ViewUpdateCmd> updateHandler =
+        [this](const WrappedEvent<void, ViewUpdateCmd>& e) {
           (void)e;
           draw();
         };
@@ -23,9 +23,8 @@ StatsView::StatsView(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
 
 void StatsView::draw() {
   if (auto r = router.lock()) {
-    const auto playerOpt =
-        r->invokeFirstAvailable<std::reference_wrapper<const Player>>(
-            sourceNode, ToConstRefInv<Player>{});
+    const auto playerOpt = r->invokeFirstAvailable(
+        sourceNode, ToConstRefInv<std::reference_wrapper<const Player>>{});
 
     if (playerOpt) {
       const auto& player = playerOpt.value().get();

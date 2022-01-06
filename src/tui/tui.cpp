@@ -84,15 +84,15 @@ int main(int argc, char** argv) {
   drawViewsToScreen();
   const auto controllerNode = router->requestId();
 
-  EventHandler<DrawToScreenCmd> drawCmdHandler =
-      [](const WrappedEvent<DrawToScreenCmd>& e) {
+  EventHandler<void, DrawToScreenCmd> drawCmdHandler =
+      [](const WrappedEvent<void, DrawToScreenCmd>& e) {
         (void)e;
         drawViewsToScreen();
       };
 
-  EventHandler<CardResp> onCardDrawnHandler =
-      [controllerNode](const WrappedEvent<CardResp>& e) {
-        e.router.broadcast(controllerNode, ViewUpdateCmd{});
+  EventHandler<void, CardResp> onCardDrawnHandler =
+      [controllerNode](const WrappedEvent<void, CardResp>& e) {
+        e.router.broadcast(controllerNode, ViewUpdateCmd<void>{});
         drawViewsToScreen();
       };
 
@@ -101,29 +101,31 @@ int main(int argc, char** argv) {
   router->listen(controllerNode, true, onCardDrawnHandler);
 
   while (true) {
-    router->send(controllerNode, dealer->getNodeId(), StartRoundCmd{});
+    router->invoke(controllerNode, dealer->getNodeId(), StartRoundCmd<void>{});
 
     // TODO: move to tui controller
-    router->broadcast(controllerNode, TableViewDealerDownCardVisCmd{ false });
-    router->broadcast(controllerNode, ViewUpdateCmd{});
+    router->broadcast(controllerNode,
+                      TableViewDealerDownCardVisCmd<void>{ false });
+    router->broadcast(controllerNode, ViewUpdateCmd<void>{});
     drawViewsToScreen();
 
     // TODO: offer insurance
     const auto dealerHasBlackjack = dealer->checkDealerBlackjack();
     if (!dealerHasBlackjack) {
       while (dealer->getCurrPlayerNode() != table->getEndPlayer()) {
-        router->broadcast(controllerNode, InputGetAndMapKeyPress{});
-        router->broadcast(controllerNode, ViewUpdateCmd{});
+        router->broadcast(controllerNode, InputGetAndMapKeyPress<void>{});
+        router->broadcast(controllerNode, ViewUpdateCmd<void>{});
         drawViewsToScreen();
       }
-      router->broadcast(controllerNode, DealerPlayHandCmd{});
+      router->broadcast(controllerNode, DealerPlayHandCmd<void>{});
     }
 
     // TODO: fire round results cmd
     dealer->handleRoundResults();
 
-    router->broadcast(controllerNode, TableViewDealerDownCardVisCmd{ true });
-    router->broadcast(controllerNode, ViewUpdateCmd{});
+    router->broadcast(controllerNode,
+                      TableViewDealerDownCardVisCmd<void>{ true });
+    router->broadcast(controllerNode, ViewUpdateCmd<void>{});
     drawViewsToScreen();
 
     // wait for input so player can see round results

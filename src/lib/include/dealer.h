@@ -25,12 +25,10 @@ private:
   std::list<Hand> dealerHands;
   OwningHandle sourceNode;
   NodeId tableNode;
-  ConstPlayerNodeIter beginPlayer;
   ConstPlayerNodeIter currPlayer;
   ConstPlayerNodeIter endPlayer;
   std::weak_ptr<EventRouter> router;
 
-  void publishUpCard(const Card& card);
   bool shouldPlayDealerHand();
   bool handlePlayerAction(Player& player, PlayerAction action);
 

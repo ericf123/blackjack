@@ -5,76 +5,60 @@
 #include "player_action.h"
 #include "table.h"
 
-struct AdjustBankrollCmd {
-  Bankroll changeAmount;
-};
+template <typename Return> struct AdjustBankrollCmd { Bankroll changeAmount; };
 
-struct CardReq {
+template <typename Return> struct CardReq {
   const NodeId& receiver;
   bool secret;
 };
 
-struct CardResp {
-  const bjcard::Card& card;
-};
+template <typename Return> struct CardResp { const bjcard::Card& card; };
 
-struct DealerPlayHandCmd {};
-struct DrawToScreenCmd {};
+template <typename Return> struct DealerPlayHandCmd {};
 
-struct InputPlayerActionInv {};
+template <typename Return> struct DrawToScreenCmd {};
 
-struct InputBlockUntilKeyPressed {};
+template <typename Return> struct InputPlayerActionInv {};
 
-struct InputGetAndMapKeyPress {};
-struct PlayerActionCmd {
+template <typename Return> struct InputBlockUntilKeyPressed {};
+
+template <typename Return> struct InputGetAndMapKeyPress {};
+
+template <typename Return> struct PlayerActionCmd {
   const PlayerAction& action;
 };
 
-struct PlayerDoubleHandCmd {};
+template <typename Return> struct PlayerDoubleHandCmd {};
 
-struct PlayerEndHandCmd {};
+template <typename Return> struct PlayerEndHandCmd {};
 
-struct PlayerGetWagerInv {};
+template <typename Return> struct PlayerGetWagerInv {};
 
-struct PlayerReceiveUpCardCmd {
+template <typename Return> struct PlayerReceiveUpCardCmd {
   const bjcard::Card& card;
 };
 
-struct PlayerSplitHandCmd {};
+template <typename Return> struct PlayerSplitHandCmd {};
 
-struct PlayerStartRoundCmd {
-  const Wager& wager;
-};
+template <typename Return> struct PlayerStartRoundCmd { const Wager& wager; };
 
-struct StartRoundCmd {};
+template <typename Return> struct StartRoundCmd {};
 
-struct ShuffleIfNeededCmd {};
+template <typename Return> struct ShuffleIfNeededCmd {};
 
-struct TableBeginPlayerReq {};
-
-struct TableBeginPlayerResp {
-  PlayerNodeIter player;
-};
-
-struct TableEndPlayerReq {};
-
-struct TableEndPlayerResp {
-  PlayerNodeIter player;
-};
-
-struct TableViewDealerDownCardVisCmd {
+template <typename Return> struct TableViewDealerDownCardVisCmd {
   bool visibile;
 };
 
-template <typename T> struct ToConstRefInv {};
+template <typename Return> struct ToConstRefInv {};
 
-struct TuiPlayerActionCmd {
+template <typename Return> struct TuiPlayerActionCmd {
   const PlayerAction& action;
 };
 
-struct ViewUpdateCmd {};
+template <typename Return> struct ViewUpdateCmd {};
 
-struct WagerViewGetWagerInv {
+template <typename Return> struct WagerViewGetWagerInv {
   const Wager& minWager;
   const Wager& maxWager;
 };

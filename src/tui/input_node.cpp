@@ -9,26 +9,27 @@ InputNode::InputNode(int hitKey, int standKey, int doubleKey, int splitKey,
       splitKey(splitKey), sourceNode(sourceNode) {
   if (!router.expired()) {
     auto r = router.lock();
-    EventHandler<InputGetAndMapKeyPress> getAndMapKeyHandler =
-        [this](const WrappedEvent<InputGetAndMapKeyPress>& e) {
+    EventHandler<void, InputGetAndMapKeyPress> getAndMapKeyHandler =
+        [this](const WrappedEvent<void, InputGetAndMapKeyPress>& e) {
           const auto userInputChar = getch();
           if (userInputChar == this->hitKey) {
             e.router.broadcast(this->sourceNode,
-                               TuiPlayerActionCmd{ PlayerAction::Hit });
+                               TuiPlayerActionCmd<void>{ PlayerAction::Hit });
           } else if (userInputChar == this->standKey) {
             e.router.broadcast(this->sourceNode,
-                               TuiPlayerActionCmd{ PlayerAction::Stand });
+                               TuiPlayerActionCmd<void>{ PlayerAction::Stand });
           } else if (userInputChar == this->doubleKey) {
-            e.router.broadcast(this->sourceNode,
-                               TuiPlayerActionCmd{ PlayerAction::DoubleDown });
+            e.router.broadcast(
+                this->sourceNode,
+                TuiPlayerActionCmd<void>{ PlayerAction::DoubleDown });
           } else if (userInputChar == this->splitKey) {
             e.router.broadcast(this->sourceNode,
-                               TuiPlayerActionCmd{ PlayerAction::Split });
+                               TuiPlayerActionCmd<void>{ PlayerAction::Split });
           }
         };
 
-    EventHandler<InputBlockUntilKeyPressed> blockForKeyPressHandler =
-        [](const WrappedEvent<InputBlockUntilKeyPressed>& e) {
+    EventHandler<void, InputBlockUntilKeyPressed> blockForKeyPressHandler =
+        [](const WrappedEvent<void, InputBlockUntilKeyPressed>& e) {
           (void)e;
           getch();
         };

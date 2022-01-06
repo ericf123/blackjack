@@ -15,23 +15,19 @@ Dealer::Dealer(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
   dealerHand = dealerHands.begin();
 
   if (auto r = router.lock()) {
-    // TODO: remove in favor of invoke
-    EventHandler<TableEndPlayerResp> endPlayerHandler =
-        [this](const WrappedEvent<TableEndPlayerResp>& e) {
-          endPlayer = e.event.player;
-        };
+    if (auto tableOpt = r->invokeFirstAvailable(
+            sourceNode, ToConstRefInv<std::reference_wrapper<const Table>>{})) {
+      const auto& table = tableOpt.value().get();
+      endPlayer = table.getEndPlayer();
+    }
 
-    EventHandler<TableBeginPlayerResp> beginPlayerHandler =
-        [this](const WrappedEvent<TableBeginPlayerResp>& e) {
-          beginPlayer = e.event.player;
-        };
-
-    EventHandler<PlayerActionCmd> playerActionHandler =
-        [this](const WrappedEvent<PlayerActionCmd>& e) {
+    EventHandler<void, PlayerActionCmd> playerActionHandler =
+        [this](const WrappedEvent<void, PlayerActionCmd>& e) {
           if (currPlayer != endPlayer && e.sourceId == *currPlayer) {
-            const auto playerOpt =
-                e.router.invoke<std::reference_wrapper<const Player>>(
-                    this->sourceNode, e.sourceId, ToConstRefInv<Player>{});
+            const auto playerOpt = e.router.invoke(
+                this->sourceNode, e.sourceId,
+                ToConstRefInv<std::reference_wrapper<const Player>>{});
+
             if (playerOpt) {
               const auto& player = playerOpt.value().get();
               auto action = e.event.action;
@@ -40,20 +36,20 @@ Dealer::Dealer(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
 
               if (action == PlayerAction::Split) {
                 const auto debitAmount = -1 * player.getCurrentHandWager();
-                e.router.send(
-                    this->sourceNode, *currPlayer,
-                    AdjustBankrollCmd{ static_cast<Bankroll>(debitAmount) });
-                e.router.send(this->sourceNode, *currPlayer,
-                              PlayerSplitHandCmd{});
+                e.router.invoke(this->sourceNode, *currPlayer,
+                                AdjustBankrollCmd<void>{
+                                    static_cast<Bankroll>(debitAmount) });
+                e.router.invoke(this->sourceNode, *currPlayer,
+                                PlayerSplitHandCmd<void>{});
               }
 
               if (action == PlayerAction::DoubleDown) {
                 const auto debitAmount = -1 * player.getCurrentHandWager();
-                e.router.send(
-                    this->sourceNode, *currPlayer,
-                    AdjustBankrollCmd{ static_cast<Bankroll>(debitAmount) });
-                e.router.send(this->sourceNode, *currPlayer,
-                              PlayerDoubleHandCmd{});
+                e.router.invoke(this->sourceNode, *currPlayer,
+                                AdjustBankrollCmd<void>{
+                                    static_cast<Bankroll>(debitAmount) });
+                e.router.invoke(this->sourceNode, *currPlayer,
+                                PlayerDoubleHandCmd<void>{});
 
                 drawCard = true;
 
@@ -66,8 +62,8 @@ Dealer::Dealer(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
 
               // deal player a card if necessary
               if (drawCard) {
-                e.router.send(this->sourceNode, this->tableNode,
-                              CardReq{ *currPlayer, false });
+                e.router.invoke(this->sourceNode, this->tableNode,
+                                CardReq<void>{ *currPlayer, false });
               }
 
               // check if player busted
@@ -81,8 +77,8 @@ Dealer::Dealer(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
 
               if (action == PlayerAction::Stand ||
                   action == PlayerAction::EndTurn) {
-                e.router.send(this->sourceNode, *currPlayer,
-                              PlayerEndHandCmd{});
+                e.router.invoke(this->sourceNode, *currPlayer,
+                                PlayerEndHandCmd<void>{});
               }
 
               if (action == PlayerAction::EndTurn) {
@@ -92,49 +88,43 @@ Dealer::Dealer(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
           }
         };
 
-    EventHandler<StartRoundCmd> startRoundHandler =
-        [this](const WrappedEvent<StartRoundCmd>& e) {
+    EventHandler<void, StartRoundCmd> startRoundHandler =
+        [this](const WrappedEvent<void, StartRoundCmd>& e) {
           (void)e;
           dealerHand->reset();
 
-          const auto tableOpt =
-              e.router
-                  .invokeFirstAvailable<std::reference_wrapper<const Table>>(
-                      this->sourceNode, ToConstRefInv<Table>{});
+          const auto tableOpt = e.router.invokeFirstAvailable(
+              this->sourceNode,
+              ToConstRefInv<std::reference_wrapper<const Table>>{});
           if (tableOpt) {
             const auto& table = tableOpt.value().get();
-            beginPlayer = table.getBeginPlayer();
             currPlayer = table.getBeginPlayer();
-            endPlayer = table.getEndPlayer();
             dealInitialCards();
           }
         };
 
-    EventHandler<DealerPlayHandCmd> playDealerHandHandler =
-        [this](const WrappedEvent<DealerPlayHandCmd>& e) {
+    EventHandler<void, DealerPlayHandCmd> playDealerHandHandler =
+        [this](const WrappedEvent<void, DealerPlayHandCmd>& e) {
           (void)e;
           playDealerHand();
         };
 
-    EventHandler<CardResp> receiveCardHandler =
-        [this](const WrappedEvent<CardResp>& e) {
+    EventHandler<void, CardResp> receiveCardHandler =
+        [this](const WrappedEvent<void, CardResp>& e) {
           dealerHand->addCard(e.event.card);
         };
 
-    InvokeHandler<std::reference_wrapper<const Dealer>, ToConstRefInv<Dealer>>
+    EventHandler<std::reference_wrapper<const Dealer>, ToConstRefInv>
         toConstRefInvHandler =
-            [this](
-                const WrappedEvent<ToConstRefInv<Dealer>>& e) -> const Dealer& {
+            [this](const WrappedEvent<std::reference_wrapper<const Dealer>,
+                                      ToConstRefInv>& e) -> const Dealer& {
       (void)e;
       return *this;
     };
 
-    r->registerInvokeHandler(sourceNode, toConstRefInvHandler);
-    // register the player action handler
+    r->listen(sourceNode, false, toConstRefInvHandler);
     r->listen(sourceNode, false, startRoundHandler);
     r->listen(sourceNode, false, playerActionHandler);
-
-    // register play dealer hand handler
     r->listen(sourceNode, false, playDealerHandHandler);
     r->listen(sourceNode, false, receiveCardHandler);
   }
@@ -145,42 +135,42 @@ ConstPlayerNodeIter Dealer::getCurrPlayerNode() const { return currPlayer; };
 void Dealer::dealInitialCards() {
   if (!router.expired()) {
     auto r = router.lock();
-    r->send(sourceNode, tableNode, ShuffleIfNeededCmd{});
-    r->send(sourceNode, tableNode, TableBeginPlayerReq{});
+    r->invoke(sourceNode, tableNode, ShuffleIfNeededCmd<void>{});
+    const auto players = r->broadcast(
+        sourceNode, ToConstRefInv<std::reference_wrapper<const Player>>{});
 
     // deal everyone with a non-zero wager the first card
-    for (auto playerIter = beginPlayer; playerIter != endPlayer; ++playerIter) {
+    for (auto wrappedPlayer : players) {
+      const auto playerNodeId = wrappedPlayer.get().getNodeId();
       const auto wager =
-          r->invoke<Wager>(sourceNode, *playerIter, PlayerGetWagerInv{});
+          r->invoke(sourceNode, playerNodeId, PlayerGetWagerInv<Wager>{});
 
       if (wager && wager.value() > 0) {
-        r->send(sourceNode, *playerIter,
-                AdjustBankrollCmd{ -1 * static_cast<Bankroll>(wager.value()) });
-        r->send(sourceNode, *playerIter, PlayerStartRoundCmd{ wager.value() });
-        r->send(sourceNode, tableNode, CardReq{ *playerIter, false });
+        r->invoke(sourceNode, playerNodeId,
+                  AdjustBankrollCmd<void>{
+                      -1 * static_cast<Bankroll>(wager.value()) });
+        r->invoke(sourceNode, playerNodeId,
+                  PlayerStartRoundCmd<void>{ wager.value() });
+        r->invoke(sourceNode, tableNode, CardReq<void>{ playerNodeId, false });
       }
     }
 
     // deal first card to dealer (unobservable)
-    // dealerHand->addCard(table->drawCard(false));
-    r->send(sourceNode, tableNode, CardReq{ *sourceNode, true });
+    r->invoke(sourceNode, tableNode, CardReq<void>{ *sourceNode, true });
+
     // deal everyone with a non-zero wager the second card
-    // TODO: replace with broadcasting ToConstRefInv<Player>
-    for (auto playerIter = beginPlayer; playerIter != endPlayer; ++playerIter) {
-      const auto playerOpt = r->invoke<std::reference_wrapper<const Player>>(
-          sourceNode, *playerIter, ToConstRefInv<Player>{});
-      if (playerOpt) {
-        const auto& player = playerOpt.value().get();
-        if (player.getCurrentHandWager() > 0) {
-          r->send(sourceNode, tableNode, CardReq{ *playerIter, false });
-        }
+    for (const auto wrappedPlayer : players) {
+      const auto& player = wrappedPlayer.get();
+      if (player.getCurrentHandWager() > 0) {
+        r->invoke(sourceNode, tableNode,
+                  CardReq<void>{ player.getNodeId(), false });
       }
     }
 
     // deal second card to dealer (observable)
-    r->send(sourceNode, tableNode, CardReq{ *sourceNode, false });
+    r->invoke(sourceNode, tableNode, CardReq<void>{ *sourceNode, false });
     const auto upCard = *(std::next(dealerHand->getBeginIter()));
-    r->broadcast(sourceNode, PlayerReceiveUpCardCmd{ upCard });
+    r->broadcast(sourceNode, PlayerReceiveUpCardCmd<void>{ upCard });
   }
 }
 
@@ -191,23 +181,20 @@ NodeId Dealer::getNodeId() const { return *sourceNode; };
 ConstHandIter Dealer::getDealerHand() const { return dealerHand; };
 
 bool Dealer::shouldPlayDealerHand() {
-  if (!router.expired()) {
-    auto r = router.lock();
-    // TODO: replace with broadcasting ToConstRefInv<Player>
-    for (auto playerIter = beginPlayer; playerIter != endPlayer; ++playerIter) {
-      const auto playerOpt = r->invoke<std::reference_wrapper<const Player>>(
-          sourceNode, *playerIter, ToConstRefInv<Player>{});
-      if (playerOpt) {
-        const auto& player = playerOpt.value().get();
+  if (auto r = router.lock()) {
+    const auto players = r->broadcast(
+        sourceNode, ToConstRefInv<std::reference_wrapper<const Player>>{});
 
-        const auto handOpt = player.getBeginHand();
-        const auto endHandOpt = player.getEndHand();
-        if (handOpt && endHandOpt) {
-          for (auto hand = handOpt.value(), endHand = endHandOpt.value();
-               hand != endHand; ++hand) {
-            if (!hand->isBusted() && !hand->isBlackjack()) {
-              return true;
-            }
+    for (const auto wrappedPlayer : players) {
+      const auto& player = wrappedPlayer.get();
+
+      const auto handOpt = player.getBeginHand();
+      const auto endHandOpt = player.getEndHand();
+      if (handOpt && endHandOpt) {
+        for (auto hand = handOpt.value(), endHand = endHandOpt.value();
+             hand != endHand; ++hand) {
+          if (!hand->isBusted() && !hand->isBlackjack()) {
+            return true;
           }
         }
       }
@@ -218,26 +205,26 @@ bool Dealer::shouldPlayDealerHand() {
 }
 
 void Dealer::playDealerHand() {
-  if (!router.expired()) {
-    auto r = router.lock();
-
+  if (auto r = router.lock()) {
     // allow players to observe the dealer's down card (they couldn't before)
     // this assumes the dealer hides their first card, shows their second
     const auto dealerDownCard = *dealerHand->getBeginIter();
-    r->send(sourceNode, *sourceNode, CardResp{ dealerDownCard });
+    r->invoke(sourceNode, *sourceNode, CardResp<void>{ dealerDownCard });
 
     if (shouldPlayDealerHand()) {
-      // TODO: replace with broadcasting ToConstRefInv<Table>
-      const auto tableOpt = r->invoke<std::reference_wrapper<const Table>>(
-          sourceNode, tableNode, ToConstRefInv<Table>{});
+      const auto tableOpt = r->invokeFirstAvailable(
+          sourceNode, ToConstRefInv<std::reference_wrapper<const Table>>{});
+
       if (tableOpt) {
         const auto& table = tableOpt.value().get();
         const auto shouldHitSoft17 = table.shouldDealerHitSoft17();
         while (dealerHand->getValue() <= DEALER_STAND_VALUE) {
           if (dealerHand->getValue() < DEALER_STAND_VALUE) {
-            r->send(sourceNode, tableNode, CardReq{ *sourceNode, false });
+            r->invoke(sourceNode, tableNode,
+                      CardReq<void>{ *sourceNode, false });
           } else if (shouldHitSoft17 && dealerHand->isSoft()) {
-            r->send(sourceNode, tableNode, CardReq{ *sourceNode, false });
+            r->invoke(sourceNode, tableNode,
+                      CardReq<void>{ *sourceNode, false });
           } else { // dealer has soft 17 and stands
             break;
           }
@@ -248,19 +235,16 @@ void Dealer::playDealerHand() {
 }
 
 void Dealer::handleRoundResults() {
-  if (!router.expired()) {
-    auto r = router.lock();
-    // TODO: replace with broadcasting ToConstRefInv<Table>
-    const auto tableOpt = r->invoke<std::reference_wrapper<const Table>>(
-        sourceNode, tableNode, ToConstRefInv<Table>{});
+  if (auto r = router.lock()) {
+    const auto tableOpt = r->invokeFirstAvailable(
+        sourceNode, ToConstRefInv<std::reference_wrapper<const Table>>{});
+
     if (tableOpt) {
       const auto& table = tableOpt.value().get();
       const auto blackjackPayoutRatio = table.getBlackjackPayoutRatio();
 
-      // TODO: replace with broadcasting ToConstRefInv<Player>
-      const auto playerRefs =
-          r->broadcastInvoke<std::reference_wrapper<const Player>>(
-              sourceNode, ToConstRefInv<Player>{});
+      const auto playerRefs = r->broadcast(
+          sourceNode, ToConstRefInv<std::reference_wrapper<const Player>>{});
 
       for (const auto wrappedPlayer : playerRefs) {
         const auto& player = wrappedPlayer.get();
@@ -289,8 +273,8 @@ void Dealer::handleRoundResults() {
             } // else -> player lost, do nothing
 
             if (payout > 0) {
-              r->send(sourceNode, player.getNodeId(),
-                      AdjustBankrollCmd{ payout });
+              r->invoke(sourceNode, player.getNodeId(),
+                        AdjustBankrollCmd<void>{ payout });
             }
           }
         }

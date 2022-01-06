@@ -14,13 +14,13 @@ TableView::TableView(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
   auto blackjackPayoutRatio = 0;
   auto hit17 = true;
   if (auto r = router.lock()) {
-    EventHandler<TableViewDealerDownCardVisCmd> dealerDownCardVisHandler =
-        [this](const WrappedEvent<TableViewDealerDownCardVisCmd>& e) {
+    EventHandler<void, TableViewDealerDownCardVisCmd> dealerDownCardVisHandler =
+        [this](const WrappedEvent<void, TableViewDealerDownCardVisCmd>& e) {
           setDealerUpCardVisible(e.event.visibile);
         };
 
-    EventHandler<ViewUpdateCmd> updateHandler =
-        [this](const WrappedEvent<ViewUpdateCmd>& e) {
+    EventHandler<void, ViewUpdateCmd> updateHandler =
+        [this](const WrappedEvent<void, ViewUpdateCmd>& e) {
           (void)e;
           draw();
         };
@@ -28,8 +28,8 @@ TableView::TableView(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
     r->listen(sourceNode, false, dealerDownCardVisHandler);
     r->listen(sourceNode, false, updateHandler);
 
-    auto table = r->invokeFirstAvailable<std::reference_wrapper<const Table>>(
-        sourceNode, ToConstRefInv<Table>{});
+    auto table = r->invokeFirstAvailable(
+        sourceNode, ToConstRefInv<std::reference_wrapper<const Table>>{});
     if (table) {
       const auto& t = table.value().get();
       blackjackPayoutRatio = t.getBlackjackPayoutRatio();
@@ -88,9 +88,8 @@ void TableView::drawIndividualHand(std::optional<ConstHandIter> beginHand,
 
 void TableView::draw() {
   if (auto r = router.lock()) {
-    const auto dealerOpt =
-        r->invokeFirstAvailable<std::reference_wrapper<const Dealer>>(
-            sourceNode, ToConstRefInv<Dealer>{});
+    const auto dealerOpt = r->invokeFirstAvailable(
+        sourceNode, ToConstRefInv<std::reference_wrapper<const Dealer>>{});
     if (dealerOpt) {
       const auto& dealer = dealerOpt.value().get();
       // first hand view is the dealers
@@ -98,9 +97,8 @@ void TableView::draw() {
                          DEALER_HAND_INDEX);
     }
 
-    const auto players =
-        r->broadcastInvoke<std::reference_wrapper<const Player>>(
-            sourceNode, ToConstRefInv<Player>{});
+    const auto players = r->broadcast(
+        sourceNode, ToConstRefInv<std::reference_wrapper<const Player>>{});
     auto currPlayer = players.cbegin();
     const auto endPlayer = players.cend();
 

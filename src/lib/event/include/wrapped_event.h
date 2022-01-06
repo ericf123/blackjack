@@ -5,17 +5,23 @@
 
 using EventId = const void*;
 
-template <typename T> struct EventIdPtr { static const T* const id; };
-template <typename T> const T* const EventIdPtr<T>::id = nullptr;
+template <typename Return, template <typename> typename Event>
+struct EventIdPtr {
+  static const Event<Return>* const id;
+};
+template <typename Return, template <typename> typename Event>
+const Event<Return>* const EventIdPtr<Return, Event>::id = nullptr;
 
-template <typename T> constexpr EventId getEventId() {
-  return &EventIdPtr<T>::id;
+template <typename Return, template <typename> typename Event>
+constexpr EventId getEventId() {
+  return &EventIdPtr<Return, Event>::id;
 }
 
-template <typename E> struct WrappedEvent {
-  static constexpr EventId eventId = getEventId<E>();
+template <typename Return, template <typename> typename Event>
+struct WrappedEvent {
+  static constexpr EventId eventId = getEventId<Return, Event>();
   const NodeId sourceId;
   const NodeId destId;
   EventRouter& router;
-  const E& event;
+  const Event<Return>& event;
 };

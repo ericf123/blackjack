@@ -13,13 +13,13 @@ WagerView::WagerView(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
   if (auto r = router.lock()) {
     setWagerRange(0, std::numeric_limits<Wager>::max());
 
-    InvokeHandler<Wager, WagerViewGetWagerInv> getWagerHandler =
-        [this](const WrappedEvent<WagerViewGetWagerInv>& e) {
+    EventHandler<Wager, WagerViewGetWagerInv> getWagerHandler =
+        [this](const WrappedEvent<Wager, WagerViewGetWagerInv>& e) {
           setWagerRange(e.event.minWager, e.event.maxWager);
           return getWager();
         };
 
-    r->registerInvokeHandler(sourceNode, getWagerHandler);
+    r->listen(sourceNode, false, getWagerHandler);
   }
 
   keypad(window.get(), true); // group function keys
@@ -106,10 +106,6 @@ Wager WagerView::getWager() {
 
   return prevWager;
 }
-
-// void WagerView::setMaxWager(Wager wager) { setWagerRange(minWager, wager); }
-
-// void WagerView::setMinWager(Wager wager) { setWagerRange(wager, maxWager); }
 
 void WagerView::setWagerRange(Wager min, Wager max) {
   minWager = min;

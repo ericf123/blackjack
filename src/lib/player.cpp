@@ -11,60 +11,60 @@ Player::Player(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
       dealerUpCard(std::nullopt) {
   hands.push_back(Hand(0));
   currHand = hands.begin();
-  if (!router.expired()) {
-    auto r = router.lock();
-    InvokeHandler<std::reference_wrapper<const Player>, ToConstRefInv<Player>>
+  if (auto r = router.lock()) {
+    EventHandler<std::reference_wrapper<const Player>, ToConstRefInv>
         toConstRefInvHandler =
-            [this](const WrappedEvent<ToConstRefInv<Player>>& e)
+            [this](const WrappedEvent<std::reference_wrapper<const Player>,
+                                      ToConstRefInv>& e)
         -> std::reference_wrapper<const Player> {
       (void)e;
       return *this;
     };
 
-    EventHandler<PlayerEndHandCmd> endHandler =
-        [this](const WrappedEvent<PlayerEndHandCmd>& e) {
+    EventHandler<void, PlayerEndHandCmd> endHandler =
+        [this](const WrappedEvent<void, PlayerEndHandCmd>& e) {
           (void)e;
           if (!playingLastHand()) {
             currHand = std::next(currHand);
           }
         };
 
-    EventHandler<PlayerDoubleHandCmd> doubleHandler =
-        [this](const WrappedEvent<PlayerDoubleHandCmd>& e) {
+    EventHandler<void, PlayerDoubleHandCmd> doubleHandler =
+        [this](const WrappedEvent<void, PlayerDoubleHandCmd>& e) {
           (void)e;
           currHand->doubleDown();
         };
 
-    EventHandler<PlayerSplitHandCmd> splitHandler =
-        [this](const WrappedEvent<PlayerSplitHandCmd>& e) {
+    EventHandler<void, PlayerSplitHandCmd> splitHandler =
+        [this](const WrappedEvent<void, PlayerSplitHandCmd>& e) {
           (void)e;
           hands.push_back(currHand->split());
         };
 
-    EventHandler<CardResp> receiveCardHandler =
-        [this](const WrappedEvent<CardResp>& e) {
+    EventHandler<void, CardResp> receiveCardHandler =
+        [this](const WrappedEvent<void, CardResp>& e) {
           currHand->addCard(e.event.card);
         };
 
-    EventHandler<AdjustBankrollCmd> bankrollAdjustmentHandler =
-        [this](const WrappedEvent<AdjustBankrollCmd>& e) {
+    EventHandler<void, AdjustBankrollCmd> bankrollAdjustmentHandler =
+        [this](const WrappedEvent<void, AdjustBankrollCmd>& e) {
           this->bankroll += e.event.changeAmount;
         };
 
-    EventHandler<PlayerReceiveUpCardCmd> receiveUpCardHandler =
-        [this](const WrappedEvent<PlayerReceiveUpCardCmd>& e) {
+    EventHandler<void, PlayerReceiveUpCardCmd> receiveUpCardHandler =
+        [this](const WrappedEvent<void, PlayerReceiveUpCardCmd>& e) {
           dealerUpCard.emplace(e.event.card);
         };
 
-    EventHandler<PlayerStartRoundCmd> startRoundHandler =
-        [this](const WrappedEvent<PlayerStartRoundCmd>& e) {
+    EventHandler<void, PlayerStartRoundCmd> startRoundHandler =
+        [this](const WrappedEvent<void, PlayerStartRoundCmd>& e) {
           hands.clear();
 
           hands.push_front(Hand(e.event.wager));
           currHand = hands.begin();
         };
 
-    r->registerInvokeHandler(sourceNode, toConstRefInvHandler);
+    r->listen(sourceNode, false, toConstRefInvHandler);
     r->listen(sourceNode, false, receiveCardHandler);
     r->listen(sourceNode, false, endHandler);
     r->listen(sourceNode, false, doubleHandler);
