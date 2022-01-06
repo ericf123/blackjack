@@ -7,9 +7,8 @@
 #include <memory>
 #include <optional>
 
-Dealer::Dealer(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
-               const NodeId& tableNode)
-    : sourceNode(sourceNode), tableNode(tableNode), router(router) {
+Dealer::Dealer(std::weak_ptr<EventRouter> router, OwningHandle sourceNode)
+    : sourceNode(sourceNode), router(router) {
   // TODO: round end handler
   dealerHands.push_front(Hand());
   dealerHand = dealerHands.begin();
@@ -62,8 +61,8 @@ Dealer::Dealer(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
 
               // deal player a card if necessary
               if (drawCard) {
-                e.router.invoke(this->sourceNode, this->tableNode,
-                                CardReq<void>{ *currPlayer, false });
+                e.router.broadcast(this->sourceNode,
+                                   CardReq<void>{ *currPlayer, false });
               }
 
               // check if player busted
@@ -135,7 +134,7 @@ ConstPlayerNodeIter Dealer::getCurrPlayerNode() const { return currPlayer; };
 void Dealer::dealInitialCards() {
   if (!router.expired()) {
     auto r = router.lock();
-    r->invoke(sourceNode, tableNode, ShuffleIfNeededCmd<void>{});
+    r->broadcast(sourceNode, ShuffleIfNeededCmd<void>{});
     const auto players = r->broadcast(
         sourceNode, ToConstRefInv<std::reference_wrapper<const Player>>{});
 
@@ -151,24 +150,23 @@ void Dealer::dealInitialCards() {
                       -1 * static_cast<Bankroll>(wager.value()) });
         r->invoke(sourceNode, playerNodeId,
                   PlayerStartRoundCmd<void>{ wager.value() });
-        r->invoke(sourceNode, tableNode, CardReq<void>{ playerNodeId, false });
+        r->broadcast(sourceNode, CardReq<void>{ playerNodeId, false });
       }
     }
 
     // deal first card to dealer (unobservable)
-    r->invoke(sourceNode, tableNode, CardReq<void>{ *sourceNode, true });
+    r->broadcast(sourceNode, CardReq<void>{ *sourceNode, true });
 
     // deal everyone with a non-zero wager the second card
     for (const auto wrappedPlayer : players) {
       const auto& player = wrappedPlayer.get();
       if (player.getCurrentHandWager() > 0) {
-        r->invoke(sourceNode, tableNode,
-                  CardReq<void>{ player.getNodeId(), false });
+        r->broadcast(sourceNode, CardReq<void>{ player.getNodeId(), false });
       }
     }
 
     // deal second card to dealer (observable)
-    r->invoke(sourceNode, tableNode, CardReq<void>{ *sourceNode, false });
+    r->broadcast(sourceNode, CardReq<void>{ *sourceNode, false });
     const auto upCard = *(std::next(dealerHand->getBeginIter()));
     r->broadcast(sourceNode, PlayerReceiveUpCardCmd<void>{ upCard });
   }
@@ -220,11 +218,9 @@ void Dealer::playDealerHand() {
         const auto shouldHitSoft17 = table.shouldDealerHitSoft17();
         while (dealerHand->getValue() <= DEALER_STAND_VALUE) {
           if (dealerHand->getValue() < DEALER_STAND_VALUE) {
-            r->invoke(sourceNode, tableNode,
-                      CardReq<void>{ *sourceNode, false });
+            r->broadcast(sourceNode, CardReq<void>{ *sourceNode, false });
           } else if (shouldHitSoft17 && dealerHand->isSoft()) {
-            r->invoke(sourceNode, tableNode,
-                      CardReq<void>{ *sourceNode, false });
+            r->broadcast(sourceNode, CardReq<void>{ *sourceNode, false });
           } else { // dealer has soft 17 and stands
             break;
           }

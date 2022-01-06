@@ -14,6 +14,12 @@ template <typename Return> struct CardReq {
 
 template <typename Return> struct CardResp { const bjcard::Card& card; };
 
+template <typename Return> struct CountNotification {
+  const int rawCount;
+  const int trueCount;
+  const double decksRemaining;
+};
+
 template <typename Return> struct DealerPlayHandCmd {};
 
 template <typename Return> struct DrawToScreenCmd {};
@@ -45,6 +51,7 @@ template <typename Return> struct PlayerStartRoundCmd { const Wager& wager; };
 template <typename Return> struct StartRoundCmd {};
 
 template <typename Return> struct ShuffleIfNeededCmd {};
+template <typename Return> struct ShuffleNotification {};
 
 template <typename Return> struct TableViewDealerDownCardVisCmd {
   bool visibile;

@@ -22,10 +22,10 @@ Table::Table(size_t numDecks, size_t minCardsInShoe,
   EventHandler<void, ShuffleIfNeededCmd> shuffleIfNeededCmdHandler =
       [this](const WrappedEvent<void, ShuffleIfNeededCmd>& e) {
         (void)e;
-
         if (firstRound || shoe.needsShuffle()) {
           shoe.shuffle();
           firstRound = false;
+          e.router.broadcast(this->sourceNode, ShuffleNotification<void>{});
         }
       };
 

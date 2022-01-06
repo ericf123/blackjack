@@ -5,8 +5,7 @@
 #include <random>
 
 Shoe::Shoe(size_t numDecks, size_t minCards) : minCards(minCards) {
-  const auto repeatTimes = numDecks;
-  for (auto curr = 0U; curr < repeatTimes; ++curr) {
+  for (auto curr = 0U; curr < numDecks; ++curr) {
     for (auto rank = Rank::Ace; rank <= Rank::King; ++rank) {
       for (auto suit = Suit::Hearts; suit <= Suit::Clubs; ++suit) {
         cards.push_back(Card{ rank, suit });

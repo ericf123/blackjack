@@ -13,6 +13,14 @@ StatsView::StatsView(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
           draw();
         };
 
+    EventHandler<void, CountNotification> countNotificationHandler =
+        [this](const WrappedEvent<void, CountNotification>& e) {
+          this->rawCount = e.event.rawCount;
+          this->trueCount = e.event.trueCount;
+          this->decksRemaining = e.event.decksRemaining;
+        };
+
+    r->listen(sourceNode, false, countNotificationHandler);
     r->listen(sourceNode, false, updateHandler);
   }
 
@@ -31,16 +39,16 @@ void StatsView::draw() {
       mvwprintw(window.get(), 1, 1, "Bankroll: $       "); // TODO: fix this
       mvwprintw(window.get(), 1, 1, "Bankroll: $%0.0f", player.getBankroll());
     }
-    // mvwprintw(window.get(), 2, 1,
-    //           "Raw Count:     "); // TODO: fix this (4 spaces)
-    // mvwprintw(window.get(), 2, 1, "Raw Count: %+d", rawCount);
-    // mvwprintw(window.get(), 3, 1,
-    //           "True Count:     "); // TODO: fix this (4 spaces)
-    // mvwprintw(window.get(), 3, 1, "True Count: %+d", trueCount);
-    // mvwprintw(window.get(), 4, 1,
-    //           "Decks Remaining:     "); // TODO: fix this (4 spaces)
-    // mvwprintw(window.get(), 4, 1, "Decks Remaining: %0.1f",
-    // decksRemaining);
+
+    mvwprintw(window.get(), 2, 1,
+              "Raw Count:     "); // TODO: fix this (4 spaces)
+    mvwprintw(window.get(), 2, 1, "Raw Count: %+d", rawCount);
+    mvwprintw(window.get(), 3, 1,
+              "True Count:     "); // TODO: fix this (4 spaces)
+    mvwprintw(window.get(), 3, 1, "True Count: %+d", trueCount);
+    mvwprintw(window.get(), 4, 1,
+              "Decks Remaining:     "); // TODO: fix this (4 spaces)
+    mvwprintw(window.get(), 4, 1, "Decks Remaining: %0.1f", decksRemaining);
   }
 }
 

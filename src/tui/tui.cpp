@@ -53,14 +53,14 @@ int main(int argc, char** argv) {
   auto weakRouter = table->getRouter();
   auto router = weakRouter.lock();
 
-  const auto dealer = std::make_shared<Dealer>(weakRouter, router->requestId(),
-                                               table->getNodeId());
+  const auto dealer = std::make_shared<Dealer>(weakRouter, router->requestId());
 
   const auto player =
       std::make_shared<TuiPlayer>(weakRouter, table->registerPlayer(), 1000);
 
   // create input handler
   InputNode inputNode{ 'j', 'k', 'l', ';', weakRouter, router->requestId() };
+  HiLo hiLoCounter{ weakRouter, router->requestId(), DECKS_PER_SHOE };
 
   // create main views
   TitleView titleView;

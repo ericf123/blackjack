@@ -1,13 +1,13 @@
 #pragma once
 
 #include "card.h"
+#include "event_def.h"
 #include <cstddef>
 
 class HiLo {
 public:
-  HiLo(std::size_t decksPerShoe)
-      : cardsPerShoe(decksPerShoe * bjcard::DECK_SIZE), rawCount(0),
-        numCardsObserved(0) {}
+  HiLo(std::weak_ptr<EventRouter>, OwningHandle sourceNode,
+       std::size_t decksPerShoe);
   void addCard(const bjcard::Card& card);
   void reset();
   void setCardsPerShoe(std::size_t cardsPerShoe);
@@ -16,6 +16,9 @@ public:
   double getDecksRemaining() const;
 
 private:
+  std::weak_ptr<EventRouter> router;
+  OwningHandle sourceNode;
+
   std::size_t cardsPerShoe;
   int rawCount;
   std::size_t numCardsObserved;

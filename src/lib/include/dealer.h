@@ -8,8 +8,7 @@ using namespace bjcard;
 
 class Dealer {
 public:
-  Dealer(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
-         const NodeId& tableNode);
+  Dealer(std::weak_ptr<EventRouter> router, OwningHandle sourceNode);
 
 public:
   ConstPlayerNodeIter getCurrPlayerNode() const;
@@ -24,7 +23,6 @@ private:
   HandIter dealerHand;
   std::list<Hand> dealerHands;
   OwningHandle sourceNode;
-  NodeId tableNode;
   ConstPlayerNodeIter currPlayer;
   ConstPlayerNodeIter endPlayer;
   std::weak_ptr<EventRouter> router;
