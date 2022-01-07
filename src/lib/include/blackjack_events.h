@@ -22,6 +22,8 @@ template <typename Return> struct CountNotification {
 
 template <typename Return> struct DealerPlayHandCmd {};
 
+template <typename Return> struct DealerHandleRoundResultsCmd {};
+
 template <typename Return> struct DrawToScreenCmd {};
 
 template <typename Return> struct InputPlayerActionInv {};

@@ -121,9 +121,7 @@ int main(int argc, char** argv) {
       router->broadcast(controllerNode, DealerPlayHandCmd<void>{});
     }
 
-    // TODO: fire round results cmd
-    dealer->handleRoundResults();
-
+    router->broadcast(controllerNode, DealerHandleRoundResultsCmd<void>{});
     router->broadcast(controllerNode,
                       TableViewDealerDownCardVisCmd<void>{ true });
     router->broadcast(controllerNode, ViewUpdateCmd<void>{});

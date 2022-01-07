@@ -15,8 +15,6 @@ public:
   bool checkDealerBlackjack() const;
   NodeId getNodeId() const;
   ConstHandIter getDealerHand() const;
-  // TODO: use events instead
-  void handleRoundResults();
 
 private:
   const CardTotal DEALER_STAND_VALUE = 17;
@@ -32,4 +30,5 @@ private:
 
   void dealInitialCards();
   void playDealerHand();
+  void handleRoundResults();
 };

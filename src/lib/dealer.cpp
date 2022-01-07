@@ -121,11 +121,18 @@ Dealer::Dealer(std::weak_ptr<EventRouter> router, OwningHandle sourceNode)
       return *this;
     };
 
+    EventHandler<void, DealerHandleRoundResultsCmd> roundResultsHandler =
+        [this](const WrappedEvent<void, DealerHandleRoundResultsCmd>& e) {
+          (void)e;
+          handleRoundResults();
+        };
+
     r->listen(sourceNode, false, toConstRefInvHandler);
     r->listen(sourceNode, false, startRoundHandler);
     r->listen(sourceNode, false, playerActionHandler);
     r->listen(sourceNode, false, playDealerHandHandler);
     r->listen(sourceNode, false, receiveCardHandler);
+    r->listen(sourceNode, false, roundResultsHandler);
   }
 }
 
