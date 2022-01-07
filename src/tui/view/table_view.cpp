@@ -11,7 +11,7 @@ TableView::TableView(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
     : View(bjdim::TABLE_HEIGHT, COLS - bjdim::STATS_WIDTH - 2, starty, startx),
       router(router), sourceNode(sourceNode) {
 
-  auto blackjackPayoutRatio = 0;
+  auto blackjackPayoutRatio = 0.0;
   auto hit17 = true;
   if (auto r = router.lock()) {
     EventHandler<void, TableViewDealerDownCardVisCmd> dealerDownCardVisHandler =
@@ -28,7 +28,7 @@ TableView::TableView(std::weak_ptr<EventRouter> router, OwningHandle sourceNode,
     r->listen(sourceNode, false, dealerDownCardVisHandler);
     r->listen(sourceNode, false, updateHandler);
 
-    auto table = r->invokeFirstAvailable(
+    const auto table = r->invokeFirstAvailable(
         sourceNode, ToConstRefInv<std::reference_wrapper<const Table>>{});
     if (table) {
       const auto& t = table.value().get();
