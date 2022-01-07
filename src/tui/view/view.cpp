@@ -23,17 +23,17 @@ View::View(int height, int width, int starty, int startx)
       panel(PanelPtr(new_panel(window.get()), &deletePanel)), height(height),
       width(width), starty(starty), startx(startx) {}
 
-int View::getHeight() { return height; }
+int View::getHeight() const { return height; }
 
-int View::getWidth() { return width; }
+int View::getWidth() const { return width; }
 
-int View::getTopY() { return starty; }
+int View::getTopY() const { return starty; }
 
-int View::getLeftX() { return startx; }
+int View::getLeftX() const { return startx; }
 
-int View::getBottomY() { return starty + height; }
+int View::getBottomY() const { return starty + height; }
 
-int View::getRightX() { return startx + width; }
+int View::getRightX() const { return startx + width; }
 
 void View::hide() { hide_panel(panel.get()); }
 

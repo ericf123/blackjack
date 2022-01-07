@@ -63,7 +63,8 @@ int main(int argc, char** argv) {
   HiLo hiLoCounter{ weakRouter, router->requestId(), DECKS_PER_SHOE };
 
   // create main views
-  TitleView titleView;
+  const TitleView titleView;
+
   const auto tableView = std::make_shared<TableView>(
       weakRouter, router->requestId(), titleView.getBottomY(),
       1 + bjdim::STATS_WIDTH);

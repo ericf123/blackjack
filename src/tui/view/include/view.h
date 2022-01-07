@@ -23,12 +23,12 @@ public:
   View(View&& view) = default;
   virtual ~View() = default;
 
-  int getHeight();
-  int getWidth();
-  int getTopY();
-  int getLeftX();
-  int getBottomY();
-  int getRightX();
+  int getHeight() const;
+  int getWidth() const;
+  int getTopY() const;
+  int getLeftX() const;
+  int getBottomY() const;
+  int getRightX() const;
 
   virtual void hide();
   virtual void show();
